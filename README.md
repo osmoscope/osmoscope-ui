@@ -17,7 +17,7 @@ To run this yourself, simply serve the contents of the `site` directory
 through a webserver and access that site in your browser. No server side
 components are necessary besides a web server that can server static pages.
 
-A test server is available at https://osmoscope.jochentopf.com/ .
+A test server is available at http://osmoscope.jochentopf.com/ .
 
 
 ## To add your own layers
