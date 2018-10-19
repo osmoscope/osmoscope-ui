@@ -13,6 +13,8 @@ var josm_control, id_control;
 
 var shouldUpdate = true;
 
+var re_numeric = /^[0-9]+$/;
+
 if (window.location.hash !== '') {
     var hash = window.location.hash.replace('#map=', '');
     var parts = hash.split('/');
@@ -196,13 +198,13 @@ function popup_content(feature) {
             var value = props[p].toString();
             if (p == 'geometry') {
                 continue;
-            } else if (p == 'node_id' && $.isNumeric(value)) {
+            } else if (p == 'node_id' && value.match(re_numeric)) {
                 p = 'Node ID';
                 value = '<a target="_blank" href="https://www.openstreetmap.org/node/' + value + '">' + value + '</a>';
-            } else if (p == 'way_id' && $.isNumeric(value)) {
+            } else if (p == 'way_id' && value.match(re_numeric)) {
                 p = 'Way ID';
                 value = '<a target="_blank" href="https://www.openstreetmap.org/way/' + value + '">' + value + '</a>';
-            } else if (p == 'relation_id' && $.isNumeric(value)) {
+            } else if (p == 'relation_id' && value.match(re_numeric)) {
                 p = 'Relation ID';
                 value = '<a target="_blank" href="https://www.openstreetmap.org/relation/' + value + '">' + value + '</a>';
             } else if (p == 'timestamp') {
@@ -268,26 +270,39 @@ function add_data_layer(url, data) {
     console.log('Add data layer ' + data_layer_num + ': ' + url, data);
 
     data_layers[url] = new DataLayer(url, data);
-    $('#layerlist').append('<li><button id="layer_'+ data_layer_num + '" href="' + url + '">' + escape_html(data.name) + '</a></li>');
-    $('#layer_' + data_layer_num).bind('click', function(event) {
+
+    var li = document.createElement('li');
+    li.innerHTML = '<button id="layer_'+ data_layer_num + '" href="' + url + '">' + escape_html(data.name) + '</button>';
+
+    var layerlist = document.getElementById('layerlist');
+    layerlist.appendChild(li);
+
+    li.children[0].addEventListener('click', function(event) {
+        layerlist.querySelectorAll('button').forEach(function(element) {
+            remove_class(element, 'selected');
+        });
+        add_class(this, 'selected');
         event.preventDefault();
-        $('#layerlist li button').removeClass("selected");
-        $(event.target).addClass("selected");
-        switch_to_layer(url);
     });
-//    $('#layerlist').listview('refresh');
-    var timeout;
-    $('#layerlist li button').hover(function() {
-        layer = data_layers[$(this).attr('href')];
-        $('#hover-desc').html('<div><b>' + layer.name() + '</b></div><p>' + layer.description() + '</p>');
-        $('#hover-desc').css('top', '' + ($(this).offset().top - 8) + 'px');
-        $('#hover-desc').css('left', '' + ($(this).width() - 240) + 'px');
-        timeout = window.setTimeout(function() {
-            $('#hover-desc').show();
-        }, 500);
-    }, function() {
-        window.clearTimeout(timeout);
-        document.getElementById('hover-desc').style.display = 'none';
+
+    var hover_desc = document.getElementById('hover-desc');
+    layerlist.querySelectorAll('button').forEach(function(element) {
+        var layer = data_layers[element.getAttribute('href')];
+        var timeout;
+
+        element.addEventListener('mouseover', function(event) {
+            hover_desc.innerHTML = '<div><b>' + layer.name() + '</b></div><p>' + layer.description() + '</p>';
+            hover_desc.style.top = '' + (this.getBoundingClientRect().top - 8) + 'px';
+            timeout = window.setTimeout(function() {
+                hover_desc.style.display = 'block';
+            }, 500);
+        });
+
+        element.addEventListener('mouseout', function(event) {
+            window.clearTimeout(timeout);
+            hover_desc.style.display = 'none';
+        });
+
     });
 
     ++data_layer_num;
@@ -307,12 +322,13 @@ function load_data_source(url) {
         data.layers.forEach(function(url) {
             load_data_layer(url);
         });
-        var len = $('#overlay-layers fieldset input').length;
-        $('#overlay-layers fieldset').append(
-              '<div class="ui-checkbox">' +
-                '<input type="checkbox" checked="checked" id="my-checkbox' + len + '"></input> ' +
-                '<label for="my-checkbox' + len + '" class="">' + escape_html(data.name) + ' (' + escape_html(url) + ')</label>' +
-              '</div>');
+        var fieldset = document.getElementById('overlay-layers').querySelectorAll('fieldset')[0];
+        var len = fieldset.querySelectorAll('input').length;
+
+        var div = document.createElement('div');
+        div.innerHTML = '<input type="checkbox" checked="checked" id="my-checkbox' + len + '"></input> ' +
+                        '<label for="my-checkbox' + len + '" class="">' + escape_html(data.name) + ' (' + escape_html(url) + ')</label>';
+        fieldset.append(div);
     });
 }
 
@@ -464,13 +480,13 @@ function switch_tab(event) {
 }
 
 function open_layers_config() {
-    $('#everything').addClass('overlay-shader');
-    $('#overlay-layers').css('display', 'block');
+    add_class(document.getElementById('everything'), 'overlay-shader');
+    document.getElementById('overlay-layers').style.display = 'block';
 }
 
 function close_layers_config() {
-    $('#overlay-layers').css('display', 'none');
-    $('#everything').removeClass('overlay-shader');
+    document.getElementById('overlay-layers').style.display = 'none';
+    remove_class(document.getElementById('everything'), 'overlay-shader');
 }
 
 function has_class(element, class_name) {
@@ -592,21 +608,15 @@ $(function() {
     });
 
     load_data_source('http://area.jochentopf.com/osmm/layers.json');
-//    load_data_source('layers.json');
 
-    $('#add_source').bind('change', function() {
-        load_data_source($('#add_source')[0].value);
+    document.getElementById('add_source').addEventListener('change', function(event) {
+        load_data_source(this.value);
     });
 
-    $('#overlay-layers-open').bind('click', function() {
-        open_layers_config();
-    });
+    document.getElementById('overlay-layers-open').addEventListener('click', open_layers_config);
+    document.getElementById('overlay-layers-close').addEventListener('click', close_layers_config);
 
-    $('#overlay-layers-close').bind('click', function() {
-        close_layers_config();
-    });
-
-    $(document).keyup(function(e) {
+    document.addEventListener('keyup', function(e) {
         if (e.keyCode === 27) { // esc
             close_layers_config();
         }

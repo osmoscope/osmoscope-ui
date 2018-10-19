@@ -178,7 +178,7 @@ button::-moz-focus-inner {
 
 #hover-desc {
     position: absolute;
-    left: 2px;
+    left: -10px;
     width: 200px;
     display: none;
     background-color: #ffffff;
