@@ -618,9 +618,11 @@ $(function() {
 
         document.getElementById('layerlist').querySelectorAll('button').forEach(function(layer) {
             if (layer.textContent.toLowerCase().includes(value)) {
+                layer.innerHTML = layer.textContent.replace(new RegExp(value, 'ig'), '<b>$&</b>');
                 layer.style.color = '#000000';
                 layer.style.display = 'block';
             } else {
+                layer.textContent = layer.textContent;
                 if (has_class(layer, 'selected')) {
                     layer.style.color = '#808080';
                 } else {
