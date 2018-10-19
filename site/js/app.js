@@ -156,9 +156,11 @@ function DataLayer(url, data) {
 }
 
 function show_message(text) {
-    $('#messages').html(text).show();
+    var message_box = document.getElementById('messages');
+    message_box.textContent = text;
+    message_box.style.display = 'block';
     window.setTimeout(function() {
-        $('#messages').hide();
+        message_box.style.display = 'none';
     }, 3000);
 }
 
@@ -285,7 +287,7 @@ function add_data_layer(url, data) {
         }, 500);
     }, function() {
         window.clearTimeout(timeout);
-        $('#hover-desc').hide();
+        document.getElementById('hover-desc').style.display = 'none';
     });
 
     ++data_layer_num;
@@ -471,6 +473,14 @@ function close_layers_config() {
     $('#everything').removeClass('overlay-shader');
 }
 
+function has_class(element, class_name) {
+    if (element.classList) {
+        return element.classList.contains(class_name);
+    }
+
+    return new RegExp('(^| )' + class_name + '( |$)', 'gi').test(element.class_name);
+}
+
 $(function() {
 
     var osm_layer = new ol.layer.Tile({
@@ -605,15 +615,16 @@ $(function() {
     var layer_filter_el = document.getElementById('layer-filter');
     layer_filter_el.addEventListener('input', function() {
         var value = layer_filter_el.value.toLowerCase();
-        $('#layerlist button')./*not('.selected').*/each(function(idx) {
-            if ($(this).text().toLowerCase().includes(value)) {
-                $(this).css('color', '#000000');
-                $(this).show();
+
+        document.getElementById('layerlist').querySelectorAll('button').forEach(function(layer) {
+            if (layer.textContent.toLowerCase().includes(value)) {
+                layer.style.color = '#000000';
+                layer.style.display = 'block';
             } else {
-                if ($(this).hasClass('selected')) {
-                    $(this).css('color', '#808080');
+                if (has_class(layer, 'selected')) {
+                    layer.style.color = '#808080';
                 } else {
-                    $(this).hide();
+                    layer.style.display = 'none';
                 }
             }
         });
