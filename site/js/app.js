@@ -262,7 +262,7 @@ function switch_to_layer(id) {
     }
 
     if (layer.stats_data_url()) {
-        d3.json(layer.stats_data_url(), init_stats);
+        d3.json(layer.stats_data_url()).then(init_stats);
     }
 }
 
@@ -311,14 +311,14 @@ function add_data_layer(url, data) {
 
 function load_data_layer(url) {
     console.log("Loading data layer " + url + " ...");
-    $.getJSON(url, function(data) {
+    d3.json(url).then(function(data) {
         add_data_layer(url, data)
     });
 }
 
 function load_data_source(url) {
     console.log("load_data_source ", url);
-    $.getJSON(url, function(data) {
+    d3.json(url).then(function(data) {
         data_sources.push(data);
         data.layers.forEach(function(url) {
             load_data_layer(url);
@@ -355,23 +355,13 @@ function init_stats(data) {
         return d[1];
     });
 
-    var scale_x = d3.time.scale()
+    var scale_x = d3.scaleTime()
                     .domain([t0, t1])
                     .range([0, w]);
 
-    var axis_x = d3.svg.axis()
-                    .scale(scale_x)
-                    .tickSize(-(h + 10))
-                    .orient('bottom');
-
-    var scale_y = d3.scale.linear()
+    var scale_y = d3.scaleLinear()
                     .domain([0, max])
                     .range([h, 0]);
-
-    var axis_y = d3.svg.axis()
-                    .scale(scale_y)
-                    .tickSize(-(w + 10))
-                    .orient('left');
 
     var chart = d3.select('#canvas_stats').append('svg')
                     .attr('width', w + margin.left + margin.right)
@@ -391,15 +381,14 @@ function init_stats(data) {
     chart.append('g')
         .attr('class', 'x axis')
         .attr('transform', 'translate(0, ' + (h + 5) + ')')
-        .call(axis_x);
+        .call(d3.axisBottom(scale_x));
 
     chart.append('g')
         .attr('class', 'y axis')
         .attr('transform', 'translate(-5, 0)')
-        .call(axis_y);
+        .call(d3.axisLeft(scale_y));
 
-    var line = d3.svg.line()
-        .interpolate("linear")
+    var line = d3.line()
         .x(function(d) { return scale_x(d[0]); })
         .y(function(d) { return scale_y(d[1]); });
 
@@ -419,7 +408,7 @@ function init_stats(data) {
             .attr('cx', function(d, i) { return scale_x(d[0]); })
             .attr('cy', function(d) { return scale_y(d[1]); })
             .attr('r', radius)
-            .attr('title', function(d, i) { return d3.time.format('%Y-%m-%d')(d[0]) + ': ' + d[1]; });
+            .attr('title', function(d, i) { return d3.timeFormat('%Y-%m-%d')(d[0]) + ': ' + d[1]; });
 }
 
 function updateZoomSliderText() {
