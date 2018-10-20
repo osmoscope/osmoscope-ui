@@ -487,7 +487,7 @@ function has_class(element, class_name) {
     return new RegExp('(^| )' + class_name + '( |$)', 'gi').test(element.class_name);
 }
 
-$(function() {
+document.addEventListener('DOMContentLoaded', function() {
 
     var osm_layer = new ol.layer.Tile({
         source: new ol.source.OSM({
