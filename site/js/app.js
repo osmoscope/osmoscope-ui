@@ -283,6 +283,7 @@ function add_data_layer(url, data) {
         });
         add_class(this, 'selected');
         event.preventDefault();
+        switch_to_layer(url);
     });
 
     var hover_desc = document.getElementById('hover-desc');
