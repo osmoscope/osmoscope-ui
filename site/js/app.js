@@ -434,19 +434,26 @@ function updatePermalink() {
     window.history.pushState(state, 'map', hash);
 }
 
-function add_class(el, className) {
-    if (el.classList) {
-        el.classList.add(className);
+function has_class(element, class_name) {
+    if (element.classList) {
+        return element.classList.contains(class_name);
+    }
+    return new RegExp('(^| )' + class_name + '( |$)', 'gi').test(element.class_name);
+}
+
+function add_class(element, class_name) {
+    if (element.classList) {
+        element.classList.add(class_name);
     } else {
-        el.className += ' ' + className;
+        element.className += ' ' + class_name;
     }
 }
 
-function remove_class(el, className) {
-    if (el.classList) {
-        el.classList.remove(className);
+function remove_class(element, class_name) {
+    if (element.classList) {
+        element.classList.remove(class_name);
     } else {
-        el.className = el.className.replace(new RegExp('(^|\\b)' + className.split(' ').join('|') + '(\\b|$)', 'gi'), ' ');
+        element.className = element.className.replace(new RegExp('(^|\\b)' + class_name.split(' ').join('|') + '(\\b|$)', 'gi'), ' ');
     }
 }
 
@@ -477,14 +484,6 @@ function open_layers_config() {
 function close_layers_config() {
     document.getElementById('overlay-layers').style.display = 'none';
     remove_class(document.getElementById('everything'), 'overlay-shader');
-}
-
-function has_class(element, class_name) {
-    if (element.classList) {
-        return element.classList.contains(class_name);
-    }
-
-    return new RegExp('(^| )' + class_name + '( |$)', 'gi').test(element.class_name);
 }
 
 document.addEventListener('DOMContentLoaded', function() {
