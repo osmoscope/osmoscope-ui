@@ -6,26 +6,54 @@ var data_layer_num = 0;
 
 var base_layer_opacity = 0.5;
 
-var zoom = 2;
-var center = [0, 20];
-
 var josm_control, id_control;
 
 var shouldUpdate = true;
 
 var re_numeric = /^[0-9]+$/;
 
-if (window.location.hash !== '') {
-    var hash = window.location.hash.replace('#map=', '');
-    var parts = hash.split('/');
-    if (parts.length === 3) {
-        zoom = parseInt(parts[0], 10);
-        center = [
-            parseFloat(parts[1]),
-            parseFloat(parts[2])
-        ];
+function AppState() {
+
+    this.center = [0.0, 20.0];
+    this.zoom = 2;
+
+    this.parse_url = function() {
+        if (window.location.hash === '') {
+            return;
+        }
+        var hash = window.location.hash.replace('#map=', '');
+        var parts = hash.split('/');
+        if (parts.length === 3) {
+            this.zoom = parseInt(parts[0], 10);
+            this.center = [
+                parseFloat(parts[1]),
+                parseFloat(parts[2])
+            ];
+        }
+    }
+
+    this.update = function() {
+        if (!shouldUpdate) {
+            // do not update the URL when the view was changed in the 'popstate' handler
+            shouldUpdate = true;
+            return;
+        }
+
+        var center = ol.proj.transform(map.getView().getCenter(), 'EPSG:3857', 'EPSG:4326');
+        var hash = '#map=' +
+            map.getView().getZoom() + '/' +
+            Math.round(center[0] * 100) / 100 + '/' +
+            Math.round(center[1] * 100) / 100;
+        var state = {
+            zoom: map.getView().getZoom(),
+            center: map.getView().getCenter()
+        };
+        window.history.pushState(state, 'map', hash);
     }
 }
+
+var app_state = new AppState;
+app_state.parse_url();
 
 var styles = {
     Point: [
@@ -415,25 +443,6 @@ function updateZoomSliderText() {
     document.querySelector('#map .ol-zoomslider-thumb').textContent = parseInt(map.getView().getZoom());
 }
 
-function updatePermalink() {
-    if (!shouldUpdate) {
-        // do not update the URL when the view was changed in the 'popstate' handler
-        shouldUpdate = true;
-        return;
-    }
-
-    var center = ol.proj.transform(map.getView().getCenter(), 'EPSG:3857', 'EPSG:4326');
-    var hash = '#map=' +
-        map.getView().getZoom() + '/' +
-        Math.round(center[0] * 100) / 100 + '/' +
-        Math.round(center[1] * 100) / 100;
-    var state = {
-        zoom: map.getView().getZoom(),
-        center: map.getView().getCenter()
-    };
-    window.history.pushState(state, 'map', hash);
-}
-
 function has_class(element, class_name) {
     if (element.classList) {
         return element.classList.contains(class_name);
@@ -520,14 +529,14 @@ document.addEventListener('DOMContentLoaded', function() {
         target: 'map',
         controls: [new ol.control.Zoom, new ol.control.Attribution],
         view: new ol.View({
-            center: ol.proj.transform(center, 'EPSG:4326', 'EPSG:3857'),
-            zoom: zoom,
+            center: ol.proj.transform(app_state.center, 'EPSG:4326', 'EPSG:3857'),
+            zoom: app_state.zoom,
             minZoom: 1,
             maxZoom: 19
         })
     });
 
-    map.on('moveend', updatePermalink);
+    map.on('moveend', app_state.update);
 
     // restore the view state when navigating through the history, see
     // https://developer.mozilla.org/en-US/docs/Web/API/WindowEventHandlers/onpopstate
