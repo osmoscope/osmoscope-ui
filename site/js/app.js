@@ -291,6 +291,8 @@ function switch_to_layer(id) {
 
     if (layer.stats_data_url()) {
         d3.json(layer.stats_data_url()).then(init_stats);
+    } else {
+        document.getElementById('canvas_stats').textContent = 'No statistics available for this layer';
     }
 }
 

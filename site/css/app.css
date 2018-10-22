@@ -262,6 +262,8 @@ h2 {
 
 .canvas {
     background-color: #ffffff;
+    text-align: center;
+    padding-top: 10px;
 }
 
 .canvas svg text {
