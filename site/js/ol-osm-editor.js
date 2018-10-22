@@ -23,17 +23,11 @@ var EditInOSMControl = function(opt_options) {
     };
 
     this.open_in_josm = function(extent, selection) {
-        $.ajax({
-            url: josm_url(extent, selection),
-            success: function(t) {
-                if (t.indexOf('OK') === -1) {
-                    show_message("Can not reach JOSM. Is it running?");
-                } else {
-                    show_message("Loading data into JOSM...");
-                }
-            },
-            error: function(e) {
+        d3.text(josm_url(extent, selection)).then(function(t){
+            if (t.indexOf('OK') === -1) {
                 show_message("Can not reach JOSM. Is it running?");
+            } else {
+                show_message("Loading data into JOSM...");
             }
         });
     };
