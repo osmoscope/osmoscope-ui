@@ -344,20 +344,34 @@ function load_data_layer(url) {
     });
 }
 
+function add_to_data_source_list(url, name) {
+    var fieldset = document.getElementById('overlay-layers').querySelectorAll('fieldset')[0];
+    var len = fieldset.querySelectorAll('input').length;
+    var div = document.createElement('div');
+    div.innerHTML = '<input type="checkbox" checked="checked" id="my-checkbox' + len + '"></input> ' +
+                    '<label for="my-checkbox' + len + '" class="">' + escape_html(name) + ' (' + escape_html(url) + ')</label>';
+    fieldset.append(div);
+}
+
 function load_data_source(url) {
     console.log("load_data_source ", url);
     d3.json(url).then(function(data) {
-        data_sources.push(data);
-        data.layers.forEach(function(url) {
-            load_data_layer(url);
-        });
-        var fieldset = document.getElementById('overlay-layers').querySelectorAll('fieldset')[0];
-        var len = fieldset.querySelectorAll('input').length;
-
-        var div = document.createElement('div');
-        div.innerHTML = '<input type="checkbox" checked="checked" id="my-checkbox' + len + '"></input> ' +
-                        '<label for="my-checkbox' + len + '" class="">' + escape_html(data.name) + ' (' + escape_html(url) + ')</label>';
-        fieldset.append(div);
+        document.getElementById('add_source').value = '';
+        if (data.layers) {
+            add_to_data_source_list(url, data.name);
+            data_sources.push(data);
+            data.layers.forEach(function(url) {
+                load_data_layer(url);
+            });
+        } else {
+            add_to_data_source_list(url, data.name);
+            data_sources.push({
+                name: data.name,
+                url: url,
+                layers: [url]
+            });
+            add_data_layer(url, data);
+        }
     });
 }
 
@@ -487,6 +501,7 @@ function switch_tab(event) {
 
 function open_layers_config() {
     add_class(document.getElementById('everything'), 'overlay-shader');
+    document.getElementById('add_source').value = '';
     document.getElementById('overlay-layers').style.display = 'block';
 }
 
