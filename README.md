@@ -33,6 +33,14 @@ The actual data of the layers has to be in GeoJSON or Mapbox Vector Tile
 format and must be put online somewhere also.
 
 
+## Javascript libraries used
+
+* [OpenLayers](https://openlayers.org/)
+* [OpenLayers Control Geocoder](https://github.com/jonataswalker/ol-geocoder)
+* [OpenLayers LayerSwitcher](https://github.com/walkermatt/ol-layerswitcher)
+* [D3](https://d3js.org/)
+
+
 ## License
 
 Copyright (C) 2018  Jochen Topf (jochen@topf.org)
