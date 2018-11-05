@@ -32,6 +32,8 @@ box.
 The actual data of the layers has to be in GeoJSON or Mapbox Vector Tile
 format and must be put online somewhere also.
 
+For a more detailed description [read this](doc/creating-layers.md).
+
 
 ## Javascript libraries used
 
