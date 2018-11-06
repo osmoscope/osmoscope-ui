@@ -17,6 +17,28 @@ To run this yourself, simply serve the contents of the `site` directory
 through a webserver and access that site in your browser. No server side
 components are necessary besides a web server that can server static pages.
 
+Here are some ways to start a simple web server for development using only
+Python2/3 or Ruby. All will serve the current directory on port 8000.
+
+```
+cd site
+python2 -m SimpleHTTPServer 8000
+```
+
+or
+
+```
+cd site
+python3 -m http.server --bind 127.0.0.1 8000
+```
+
+or
+
+```
+cd site
+ruby -run -ehttpd . -p8000 --bind-address=127.0.0.1
+```
+
 A test server is available at http://osmoscope.jochentopf.com/ .
 
 
