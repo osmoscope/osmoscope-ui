@@ -597,6 +597,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var mouseposition = new ol.control.MousePosition({
         coordinateFormat: ol.coordinate.createStringXY(4),
         projection: 'EPSG:4326',
+        undefinedHTML: ' ',
     });
     map.addControl(mouseposition);
 
