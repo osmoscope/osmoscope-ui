@@ -4,56 +4,81 @@ var unique_id_counter = 1, highlight = null;
 
 var data_layer_num = 0;
 
-var base_layer_opacity = 0.5;
-
 var josm_control, id_control;
 
 var shouldUpdate = true;
 
 var re_numeric = /^[0-9]+$/;
 
-function AppState() {
+var default_state = {
+    'zoom': 2,
+    'center': [0.0, 20.0],
+    'base_layer_opacity': 0.5,
+};
 
-    this.center = [0.0, 20.0];
-    this.zoom = 2;
+var state = {
+    'zoom': default_state.zoom,
+    'center': [default_state.center[0], default_state.center[1]],
+    'base_layer_opacity': default_state.base_layer_opacity,
+};
 
-    this.parse_url = function() {
-        if (window.location.hash === '') {
-            return;
-        }
-        var hash = window.location.hash.replace('#map=', '');
-        var parts = hash.split('/');
-        if (parts.length === 3) {
-            this.zoom = parseInt(parts[0], 10);
-            this.center = [
-                parseFloat(parts[1]),
-                parseFloat(parts[2])
-            ];
-        }
+function parse_url() {
+    if (window.location.hash === '') {
+        return;
     }
 
-    this.update = function() {
-        if (!shouldUpdate) {
-            // do not update the URL when the view was changed in the 'popstate' handler
-            shouldUpdate = true;
-            return;
-        }
+    var hash = window.location.hash.replace('#', '');
 
-        var center = ol.proj.transform(map.getView().getCenter(), 'EPSG:3857', 'EPSG:4326');
-        var hash = '#map=' +
-            map.getView().getZoom() + '/' +
-            Math.round(center[0] * 100) / 100 + '/' +
-            Math.round(center[1] * 100) / 100;
-        var state = {
-            zoom: map.getView().getZoom(),
-            center: map.getView().getCenter()
-        };
-        window.history.pushState(state, 'map', hash);
-    }
+    var parts = hash.split('&');
+
+    parts.forEach(function(part) {
+        var kv = part.split('=');
+        if (kv[0] == 'map') {
+            var mparts = kv[1].split('/');
+            if (mparts.length === 3) {
+                state.zoom = parseInt(mparts[0], 10);
+                state.center = [ parseFloat(mparts[1]), parseFloat(mparts[2]) ];
+            }
+        } else if (kv[0] == 'op') {
+            state.base_layer_opacity = kv[1];
+        }
+    });
 }
 
-var app_state = new AppState;
-app_state.parse_url();
+function set_state() {
+    map.getView().setCenter(ol.proj.transform(state.center, 'EPSG:4326', 'EPSG:3857'));
+    map.getView().setZoom(state.zoom);
+    document.getElementById('slide').value = state.base_layer_opacity;
+    base_layers.forEach(function(l) {
+        l.setOpacity(state.base_layer_opacity);
+    });
+}
+
+function update_state() {
+    if (!shouldUpdate) {
+        // do not update the URL when the view was changed in the 'popstate' handler
+        shouldUpdate = true;
+        return;
+    }
+
+    state.zoom = map.getView().getZoom();
+    state.center = ol.proj.transform(center = map.getView().getCenter(), 'EPSG:3857', 'EPSG:4326');
+
+    var hash = '';
+
+    if (state.zoom != default_state.zoom || state.center[0] != default_state.center[0] || state.center[1] != default_state.center[1]) {
+        hash += '&map=' +
+        state.zoom + '/' +
+        Math.round(state.center[0] * 100) / 100 + '/' +
+        Math.round(state.center[1] * 100) / 100;
+    }
+
+    if (state.base_layer_opacity != default_state.base_layer_opacity) {
+        hash += '&op=' + state.base_layer_opacity;
+    }
+
+    window.history.pushState(state, 'map', hash.replace('&', '#'));
+}
 
 var styles = {
     Point: [
@@ -195,10 +220,11 @@ function show_message(text) {
 }
 
 function update_opacity(value) {
-    base_layer_opacity = value;
+    state.base_layer_opacity = value;
     base_layers.forEach(function(l) {
         l.setOpacity(value);
     });
+    update_state();
 }
 
 function get_selection_object(feature) {
@@ -514,6 +540,8 @@ function close_layers_config() {
 
 document.addEventListener('DOMContentLoaded', function() {
 
+    parse_url();
+
     var osm_layer = new ol.layer.Tile({
         source: new ol.source.OSM({
             attributions: 'Base map &copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors.' +
@@ -522,7 +550,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }),
         type: 'base',
         title: "OSM Standard",
-        opacity: base_layer_opacity
+        opacity: state.base_layer_opacity
     })
 
     var toner_layer = new ol.layer.Tile({
@@ -536,7 +564,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }),
         type: 'base',
         title: "OSM Toner",
-        opacity: base_layer_opacity
+        opacity: state.base_layer_opacity
     })
 
     base_layers = [toner_layer, osm_layer];
@@ -546,14 +574,14 @@ document.addEventListener('DOMContentLoaded', function() {
         target: 'map',
         controls: [new ol.control.Zoom, new ol.control.Attribution],
         view: new ol.View({
-            center: ol.proj.transform(app_state.center, 'EPSG:4326', 'EPSG:3857'),
-            zoom: app_state.zoom,
+            center: ol.proj.transform(state.center, 'EPSG:4326', 'EPSG:3857'),
+            zoom: state.zoom,
             minZoom: 1,
             maxZoom: 19
         })
     });
 
-    map.on('moveend', app_state.update);
+    map.on('moveend', update_state);
 
     // restore the view state when navigating through the history, see
     // https://developer.mozilla.org/en-US/docs/Web/API/WindowEventHandlers/onpopstate
@@ -561,8 +589,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (event.state === null) {
             return;
         }
-        map.getView().setCenter(event.state.center);
-        map.getView().setZoom(event.state.zoom);
+        state = event.state;
+        set_state();
         shouldUpdate = false;
     });
 
@@ -617,6 +645,8 @@ document.addEventListener('DOMContentLoaded', function() {
     id_control = new EditInOSMControl({ editor: 'id' });
     map.addControl(josm_control);
     map.addControl(id_control);
+
+    set_state();
 
     document.getElementById('tab-nav').querySelectorAll('button').forEach(function(child) {
         child.addEventListener('click', switch_tab, false);
