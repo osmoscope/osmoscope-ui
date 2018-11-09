@@ -1,5 +1,5 @@
 
-var map, base_layers = [], vt_layer, data_sources = [], data_layers = {};
+var map, vt_layer, data_sources = [], data_layers = {};
 var unique_id_counter = 1, highlight = null;
 
 var data_layer_num = 0;
@@ -14,12 +14,14 @@ var default_state = {
     'zoom': 2,
     'center': [0.0, 20.0],
     'base_layer_opacity': 0.5,
+    'base_layer' : 'OS',
 };
 
 var state = {
     'zoom': default_state.zoom,
     'center': [default_state.center[0], default_state.center[1]],
     'base_layer_opacity': default_state.base_layer_opacity,
+    'base_layer': default_state.base_layer,
 };
 
 function parse_url() {
@@ -39,6 +41,8 @@ function parse_url() {
                 state.zoom = parseInt(mparts[0], 10);
                 state.center = [ parseFloat(mparts[1]), parseFloat(mparts[2]) ];
             }
+        } else if (kv[0] == 'bl') {
+            state.base_layer = kv[1];
         } else if (kv[0] == 'op') {
             state.base_layer_opacity = kv[1];
         }
@@ -52,6 +56,9 @@ function set_state() {
     base_layers.forEach(function(l) {
         l.setOpacity(state.base_layer_opacity);
     });
+    base_layers.forEach(function(l) {
+        l.setVisible(state.base_layer == l.get('shortname'));
+    });
 }
 
 function update_state() {
@@ -64,6 +71,12 @@ function update_state() {
     state.zoom = map.getView().getZoom();
     state.center = ol.proj.transform(center = map.getView().getCenter(), 'EPSG:3857', 'EPSG:4326');
 
+    base_layers.forEach(function(l) {
+        if (l.getVisible()) {
+            state.base_layer = l.get('shortname');
+        }
+    });
+
     var hash = '';
 
     if (state.zoom != default_state.zoom || state.center[0] != default_state.center[0] || state.center[1] != default_state.center[1]) {
@@ -73,12 +86,48 @@ function update_state() {
         Math.round(state.center[1] * 100) / 100;
     }
 
+    if (state.base_layer != default_state.base_layer) {
+        hash += '&bl=' + state.base_layer;
+    }
+
     if (state.base_layer_opacity != default_state.base_layer_opacity) {
         hash += '&op=' + state.base_layer_opacity;
     }
 
     window.history.pushState(state, 'map', hash.replace('&', '#'));
 }
+
+var base_layers = function() {
+    var osm_layer = new ol.layer.Tile({
+        source: new ol.source.OSM({
+            attributions: 'Base map &copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors.' +
+                          'Tiles <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>.',
+            wrapX: false
+        }),
+        type: 'base',
+        title: "OSM Standard",
+        shortname: 'OS',
+        opacity: state.base_layer_opacity
+    })
+
+    var toner_layer = new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            url: 'http://tile.stamen.com/toner/{z}/{x}/{y}.png',
+            minZoom: 1,
+            maxZoom: 19,
+            attributions: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="https://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>.' +
+                          'Data by <a href="https://openstreetmap.org/">OpenStreetMap</a>, under <a href="https://www.openstreetmap.org/copyright">ODbL</a>.',
+            wrapX: false
+        }),
+        type: 'base',
+        title: "OSM Toner",
+        shortname: 'Tn',
+        opacity: state.base_layer_opacity
+    })
+
+    return [toner_layer, osm_layer];
+}();
+
 
 var styles = {
     Point: [
@@ -542,33 +591,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     parse_url();
 
-    var osm_layer = new ol.layer.Tile({
-        source: new ol.source.OSM({
-            attributions: 'Base map &copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors.' +
-                          'Tiles <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>.',
-            wrapX: false
-        }),
-        type: 'base',
-        title: "OSM Standard",
-        opacity: state.base_layer_opacity
-    })
-
-    var toner_layer = new ol.layer.Tile({
-        source: new ol.source.XYZ({
-            url: 'http://tile.stamen.com/toner/{z}/{x}/{y}.png',
-            minZoom: 1,
-            maxZoom: 19,
-            attributions: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="https://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>.' +
-                          'Data by <a href="https://openstreetmap.org/">OpenStreetMap</a>, under <a href="https://www.openstreetmap.org/copyright">ODbL</a>.',
-            wrapX: false
-        }),
-        type: 'base',
-        title: "OSM Toner",
-        opacity: state.base_layer_opacity
-    })
-
-    base_layers = [toner_layer, osm_layer];
-
     map = new ol.Map({
         layers: base_layers,
         target: 'map',
@@ -582,6 +604,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     map.on('moveend', update_state);
+
+    map.getLayerGroup().on("change", update_state);
 
     // restore the view state when navigating through the history, see
     // https://developer.mozilla.org/en-US/docs/Web/API/WindowEventHandlers/onpopstate
