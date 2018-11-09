@@ -11,6 +11,7 @@ var shouldUpdate = true;
 var re_numeric = /^[0-9]+$/;
 
 var default_state = {
+    'tab': 'm',
     'zoom': 2,
     'center': [0.0, 20.0],
     'base_layer_opacity': 0.5,
@@ -18,6 +19,7 @@ var default_state = {
 };
 
 var state = {
+    'tab': default_state.tab,
     'zoom': default_state.zoom,
     'center': [default_state.center[0], default_state.center[1]],
     'base_layer_opacity': default_state.base_layer_opacity,
@@ -45,11 +47,20 @@ function parse_url() {
             state.base_layer = kv[1];
         } else if (kv[0] == 'op') {
             state.base_layer_opacity = kv[1];
+        } else if (kv[0] == 'tab') {
+            state.tab = kv[1];
         }
     });
 }
 
 function set_state() {
+    if (state.tab == 's') {
+        switch_tab_to_id('tab-stats-button');
+    } else if (state.tab == 'i') {
+        switch_tab_to_id('tab-meta-button');
+    } else {
+        switch_tab_to_id('tab-map-button');
+    }
     map.getView().setCenter(ol.proj.transform(state.center, 'EPSG:4326', 'EPSG:3857'));
     map.getView().setZoom(state.zoom);
     document.getElementById('slide').value = state.base_layer_opacity;
@@ -92,6 +103,10 @@ function update_state() {
 
     if (state.base_layer_opacity != default_state.base_layer_opacity) {
         hash += '&op=' + state.base_layer_opacity;
+    }
+
+    if (state.tab != default_state.tab) {
+        hash += '&tab=' + state.tab;
     }
 
     window.history.pushState(state, 'map', hash.replace('&', '#'));
@@ -557,9 +572,7 @@ function remove_class(element, class_name) {
     }
 }
 
-function switch_tab(event) {
-    var id = event.target.id;
-
+function switch_tab_to_id(id) {
     ['map', 'stats', 'meta'].forEach(function(tab) {
         var nid = 'tab-' + tab + '-button';
         var nid_el = document.getElementById(nid);
@@ -574,6 +587,18 @@ function switch_tab(event) {
         var tid = 'tab-' + tab;
         document.getElementById(tid).style.display = display;
     });
+}
+
+function switch_tab(event) {
+    if (event.target.id == 'tab-stats-button') {
+        state.tab = 's';
+    } else if (event.target.id == 'tab-meta-button') {
+        state.tab = 'i';
+    } else {
+        state.tab = 'm';
+    }
+    set_state();
+    update_state();
 }
 
 function open_layers_config() {
