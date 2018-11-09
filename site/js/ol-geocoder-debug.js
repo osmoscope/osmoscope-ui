@@ -1,13 +1,13 @@
 /*!
- * ol-geocoder - v3.1.0
+ * ol-geocoder - v3.2.0
  * A geocoder extension for OpenLayers.
  * https://github.com/jonataswalker/ol-geocoder
- * Built: Fri Apr 06 2018 09:18:51 GMT-0300 (-03)
+ * Built: Sat Jul 28 2018 15:24:01 GMT-0300 (Brasilia Standard Time)
  */
 
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('ol/layer/vector'), require('ol/source/vector'), require('ol/geom/point'), require('ol/feature'), require('ol/proj'), require('ol/control/control'), require('ol/style/style'), require('ol/style/icon')) :
-  typeof define === 'function' && define.amd ? define(['ol/layer/vector', 'ol/source/vector', 'ol/geom/point', 'ol/feature', 'ol/proj', 'ol/control/control', 'ol/style/style', 'ol/style/icon'], factory) :
+  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('ol/layer/Vector'), require('ol/source/Vector'), require('ol/geom/Point'), require('ol/Feature'), require('ol/proj'), require('ol/control/Control'), require('ol/style/Style'), require('ol/style/Icon')) :
+  typeof define === 'function' && define.amd ? define(['ol/layer/Vector', 'ol/source/Vector', 'ol/geom/Point', 'ol/Feature', 'ol/proj', 'ol/control/Control', 'ol/style/Style', 'ol/style/Icon'], factory) :
   (global.Geocoder = factory(global.ol.layer.Vector,global.ol.source.Vector,global.ol.geom.Point,global.ol.Feature,global.ol.proj,global.ol.control.Control,global.ol.style.Style,global.ol.style.Icon));
 }(this, (function (LayerVector,SourceVector,Point,Feature,proj,Control,Style,Icon) { 'use strict';
 
@@ -24,7 +24,33 @@
   var buttonControlId = "gcd-button-control";
   var inputQueryId = "gcd-input-query";
   var inputResetId = "gcd-input-reset";
-  var cssClasses = {"namespace":"ol-geocoder","spin":"gcd-pseudo-rotate","hidden":"gcd-hidden","address":"gcd-address","country":"gcd-country","city":"gcd-city","road":"gcd-road","olControl":"ol-control","glass":{"container":"gcd-gl-container","control":"gcd-gl-control","button":"gcd-gl-btn","input":"gcd-gl-input","expanded":"gcd-gl-expanded","reset":"gcd-gl-reset","result":"gcd-gl-result"},"inputText":{"container":"gcd-txt-container","control":"gcd-txt-control","input":"gcd-txt-input","reset":"gcd-txt-reset","icon":"gcd-txt-glass","result":"gcd-txt-result"}};
+  var cssClasses = {
+  	namespace: "ol-geocoder",
+  	spin: "gcd-pseudo-rotate",
+  	hidden: "gcd-hidden",
+  	address: "gcd-address",
+  	country: "gcd-country",
+  	city: "gcd-city",
+  	road: "gcd-road",
+  	olControl: "ol-control",
+  	glass: {
+  		container: "gcd-gl-container",
+  		control: "gcd-gl-control",
+  		button: "gcd-gl-btn",
+  		input: "gcd-gl-input",
+  		expanded: "gcd-gl-expanded",
+  		reset: "gcd-gl-reset",
+  		result: "gcd-gl-result"
+  	},
+  	inputText: {
+  		container: "gcd-txt-container",
+  		control: "gcd-txt-control",
+  		input: "gcd-txt-input",
+  		reset: "gcd-txt-reset",
+  		icon: "gcd-txt-glass",
+  		result: "gcd-txt-result"
+  	}
+  };
   var vars = {
   	containerId: containerId,
   	buttonControlId: buttonControlId,
@@ -789,15 +815,16 @@
     this.layerName = randomId('geocoder-layer-');
     this.layer = new LayerVector({
       name: this.layerName,
-      source: new SourceVector()
+      source: new SourceVector(),
     });
 
     this.options = base.options;
     // provider is either the name of a built-in provider as a string or an
     // object that implements the provider API
-    this.options.provider = (typeof this.options.provider === 'string')
-      ? this.options.provider.toLowerCase()
-      : this.options.provider;
+    this.options.provider =
+      typeof this.options.provider === 'string'
+        ? this.options.provider.toLowerCase()
+        : this.options.provider;
 
     this.els = els;
     this.lastQuery = '';
@@ -819,14 +846,19 @@
 
     let timeout, lastQuery;
     const openSearch = function () {
-      hasClass(this$1.els.control, klasses$1.glass.expanded) ?
-        this$1.collapse() : this$1.expand();
+      hasClass(this$1.els.control, klasses$1.glass.expanded)
+        ? this$1.collapse()
+        : this$1.expand();
     };
     const query = function (evt) {
       const value = evt.target.value.trim();
-      const hit = evt.key ? evt.key === 'Enter' :
-        evt.which ? evt.which === 13 :
-          evt.keyCode ? evt.keyCode === 13 : false;
+      const hit = evt.key
+        ? evt.key === 'Enter'
+        : evt.which
+          ? evt.which === 13
+          : evt.keyCode
+            ? evt.keyCode === 13
+            : false;
 
       if (hit) {
         evt.preventDefault();
@@ -874,7 +906,7 @@
       key: this.options.key,
       lang: this.options.lang,
       countrycodes: this.options.countrycodes,
-      limit: this.options.limit
+      limit: this.options.limit,
     });
 
     if (this.lastQuery === q && this.els.result.firstChild) { return; }
@@ -893,54 +925,59 @@
       ajax.callbackName = provider.callbackName;
     }
 
-    json(ajax).then(function (res) {
-      // eslint-disable-next-line no-console
-      this$1.options.debug && console.info(res);
+    json(ajax)
+      .then(function (res) {
+        // eslint-disable-next-line no-console
+        this$1.options.debug && console.info(res);
 
-      removeClass(this$1.els.reset, klasses$1.spin);
+        removeClass(this$1.els.reset, klasses$1.spin);
 
-      //will be fullfiled according to provider
-      let res_;
-      switch (this$1.options.provider) {
-        case PROVIDERS.OSM:
-          res_ = res.length ?
-            this$1.OpenStreet.handleResponse(res) : undefined;
-          break;
-        case PROVIDERS.MAPQUEST:
-          res_ = res.length ?
-            this$1.MapQuest.handleResponse(res) : undefined;
-          break;
-        case PROVIDERS.PELIAS:
-          res_ = res.features.length ?
-            this$1.Pelias.handleResponse(res.features) : undefined;
-          break;
-        case PROVIDERS.PHOTON:
-          res_ = res.features.length ?
-            this$1.Photon.handleResponse(res.features) : undefined;
-          break;
-        case PROVIDERS.BING:
-          res_ = res.resourceSets[0].resources.length
-            ? this$1.Bing.handleResponse(res.resourceSets[0].resources)
-            : undefined;
-          break;
-        case PROVIDERS.OPENCAGE:
-          res_ = res.results.length ?
-            this$1.OpenCage.handleResponse(res.results) : undefined;
-          break;
-        default:
-          res_ = this$1.options.provider.handleResponse(res);
-          break;
-      }
-      if (res_) {
-        this$1.createList(res_);
-        this$1.listenMapClick();
-      }
-    }).catch(function (err) {
-      removeClass(this$1.els.reset, klasses$1.spin);
-      const li = createElement(
-        'li', '<h5>Error! No internet connection?</h5>');
-      this$1.els.result.appendChild(li);
-    });
+        //will be fullfiled according to provider
+        let res_;
+        switch (this$1.options.provider) {
+          case PROVIDERS.OSM:
+            res_ = res.length ? this$1.OpenStreet.handleResponse(res) : undefined;
+            break;
+          case PROVIDERS.MAPQUEST:
+            res_ = res.length ? this$1.MapQuest.handleResponse(res) : undefined;
+            break;
+          case PROVIDERS.PELIAS:
+            res_ = res.features.length
+              ? this$1.Pelias.handleResponse(res.features)
+              : undefined;
+            break;
+          case PROVIDERS.PHOTON:
+            res_ = res.features.length
+              ? this$1.Photon.handleResponse(res.features)
+              : undefined;
+            break;
+          case PROVIDERS.BING:
+            res_ = res.resourceSets[0].resources.length
+              ? this$1.Bing.handleResponse(res.resourceSets[0].resources)
+              : undefined;
+            break;
+          case PROVIDERS.OPENCAGE:
+            res_ = res.results.length
+              ? this$1.OpenCage.handleResponse(res.results)
+              : undefined;
+            break;
+          default:
+            res_ = this$1.options.provider.handleResponse(res);
+            break;
+        }
+        if (res_) {
+          this$1.createList(res_);
+          this$1.listenMapClick();
+        }
+      })
+      .catch(function (err) {
+        removeClass(this$1.els.reset, klasses$1.spin);
+        const li = createElement(
+          'li',
+          '<h5>Error! No internet connection?</h5>'
+        );
+        this$1.els.result.appendChild(li);
+      });
   };
 
   Nominatim.prototype.createList = function createList (response) {
@@ -953,8 +990,7 @@
 
       switch (this$1.options.provider) {
         case PROVIDERS.OSM:
-          addressHtml =
-            "<span class=\"" + (klasses$1.road) + "\">" + (row.address.name) + "</span>";
+          addressHtml = "<span class=\"" + (klasses$1.road) + "\">" + (row.address.name) + "</span>";
           break;
         default:
           addressHtml = this$1.addressTemplate(row.address);
@@ -963,10 +999,14 @@
       const html = "<a href=\"#\">" + addressHtml + "</a>";
       const li = createElement('li', html);
 
-      li.addEventListener('click', function (evt) {
-        evt.preventDefault();
-        this$1.chosen(row, addressHtml, row.address, row.original);
-      }, false);
+      li.addEventListener(
+        'click',
+        function (evt) {
+          evt.preventDefault();
+          this$1.chosen(row, addressHtml, row.address, row.original);
+        },
+        false
+      );
 
       ul.appendChild(li);
     });
@@ -985,7 +1025,7 @@
     const address = {
       formatted: addressHtml,
       details: addressObj,
-      original: addressOriginal
+      original: addressOriginal,
     };
 
     this.options.keepOpen === false && this.clearResults(true);
@@ -995,7 +1035,7 @@
         type: EVENT_TYPE.ADDRESSCHOSEN,
         address: address,
         coordinate: coord,
-        bbox: bbox
+        bbox: bbox,
       });
     } else {
       if (bbox) {
@@ -1010,7 +1050,7 @@
         address: address,
         feature: feature,
         coordinate: coord,
-        bbox: bbox
+        bbox: bbox,
       });
     }
   };
@@ -1030,21 +1070,27 @@
       html.push(['<span class="', klasses$1.road, '">{name}</span>'].join(''));
     }
     if (address.road || address.building || address.house_number) {
-      html.push([
-        '<span class="', klasses$1.road,
-        '">{building} {road} {house_number}</span>'
-      ].join(''));
+      html.push(
+        [
+          '<span class="',
+          klasses$1.road,
+          '">{building} {road} {house_number}</span>' ].join('')
+      );
     }
     if (address.city || address.town || address.village) {
-      html.push([
-        '<span class="', klasses$1.city,
-        '">{postcode} {city} {town} {village}</span>'
-      ].join(''));
+      html.push(
+        [
+          '<span class="',
+          klasses$1.city,
+          '">{postcode} {city} {town} {village}</span>' ].join('')
+      );
     }
     if (address.state || address.country) {
-      html.push([
-        '<span class="', klasses$1.country, '">{state} {country}</span>'
-      ].join(''));
+      html.push(
+        ['<span class="', klasses$1.country, '">{state} {country}</span>'].join(
+          ''
+        )
+      );
     }
     return template(html.join('<br>'), address);
   };
@@ -1104,13 +1150,17 @@
     this.registeredListeners.mapClick = true;
 
     //one-time fire click
-    mapElement.addEventListener('click', {
-      handleEvent: function (evt) {
-        this_.clearResults(true);
-        mapElement.removeEventListener(evt.type, this, false);
-        this_.registeredListeners.mapClick = false;
-      }
-    }, false);
+    mapElement.addEventListener(
+      'click',
+      {
+        handleEvent: function (evt) {
+          this_.clearResults(true);
+          mapElement.removeEventListener(evt.type, this, false);
+          this_.registeredListeners.mapClick = false;
+        },
+      },
+      false
+    );
   };
 
   Nominatim.prototype.clearResults = function clearResults (collapse) {
@@ -1144,7 +1194,6 @@
       if ( type === void 0 ) type = CONTROL_TYPE.NOMINATIM;
       if ( options === void 0 ) options = {};
 
-
       if (!(this instanceof Base)) { return new Base(); }
 
       assert(typeof type === 'string', '@param `type` should be string!');
@@ -1155,8 +1204,7 @@
       assert(typeof options === 'object', '@param `options` should be object!');
 
       DEFAULT_OPTIONS.featureStyle = [
-        new Style({ image: new Icon({ scale: .7, src: FEATURE_SRC }) })
-      ];
+        new Style({ image: new Icon({ scale: 0.7, src: FEATURE_SRC }) }) ];
 
       this.options = mergeOptions(DEFAULT_OPTIONS, options);
       this.container = undefined;
@@ -1168,8 +1216,6 @@
         this.container = $html.els.container;
         $nominatim = new Nominatim(this, $html.els);
         this.layer = $nominatim.layer;
-      } else if (type === CONTROL_TYPE.REVERSE) {
-        // TODO
       }
 
       Control$$1.call(this, { element: this.container });

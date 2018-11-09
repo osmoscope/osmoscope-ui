@@ -1,6 +1,6 @@
 (function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('ol/control/control'), require('ol/observable')) :
-	typeof define === 'function' && define.amd ? define(['ol/control/control', 'ol/observable'], factory) :
+	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('ol/control/Control'), require('ol/Observable')) :
+	typeof define === 'function' && define.amd ? define(['ol/control/Control', 'ol/Observable'], factory) :
 	(global.LayerSwitcher = factory(global.ol.control.Control,global.ol.Observable));
 }(this, (function (Control,Observable) { 'use strict';
 
@@ -218,47 +218,61 @@ var LayerSwitcher = function (_Control) {
     }, {
         key: 'renderPanel',
         value: function renderPanel() {
-
-            this.ensureTopVisibleBaseLayerShown_();
-
-            while (this.panel.firstChild) {
-                this.panel.removeChild(this.panel.firstChild);
-            }
-
-            var ul = document.createElement('ul');
-            this.panel.appendChild(ul);
-            this.renderLayers_(this.getMap(), ul);
+            LayerSwitcher.renderPanel(this.getMap(), this.panel);
         }
 
         /**
-        * Ensure only the top-most base layer is visible if more than one is visible.
+        * **Static** Re-draw the layer panel to represent the current state of the layers.
+        * @param {ol.Map} map The OpenLayers Map instance to render layers for
+        * @param {Element} panel The DOM Element into which the layer tree will be rendered
+        */
+
+    }], [{
+        key: 'renderPanel',
+        value: function renderPanel(map, panel) {
+
+            LayerSwitcher.ensureTopVisibleBaseLayerShown_(map);
+
+            while (panel.firstChild) {
+                panel.removeChild(panel.firstChild);
+            }
+
+            var ul = document.createElement('ul');
+            panel.appendChild(ul);
+            // passing two map arguments instead of lyr as we're passing the map as the root of the layers tree
+            LayerSwitcher.renderLayers_(map, map, ul);
+        }
+
+        /**
+        * **Static** Ensure only the top-most base layer is visible if more than one is visible.
+        * @param {ol.Map} map The map instance.
         * @private
         */
 
     }, {
         key: 'ensureTopVisibleBaseLayerShown_',
-        value: function ensureTopVisibleBaseLayerShown_() {
+        value: function ensureTopVisibleBaseLayerShown_(map) {
             var lastVisibleBaseLyr;
-            LayerSwitcher.forEachRecursive(this.getMap(), function (l, idx, a) {
+            LayerSwitcher.forEachRecursive(map, function (l, idx, a) {
                 if (l.get('type') === 'base' && l.getVisible()) {
                     lastVisibleBaseLyr = l;
                 }
             });
-            if (lastVisibleBaseLyr) this.setVisible_(lastVisibleBaseLyr, true);
+            if (lastVisibleBaseLyr) LayerSwitcher.setVisible_(map, lastVisibleBaseLyr, true);
         }
 
         /**
-        * Toggle the visible state of a layer.
+        * **Static** Toggle the visible state of a layer.
         * Takes care of hiding other layers in the same exclusive group if the layer
         * is toggle to visible.
         * @private
+        * @param {ol.Map} map The map instance.
         * @param {ol.layer.Base} The layer whos visibility will be toggled.
         */
 
     }, {
         key: 'setVisible_',
-        value: function setVisible_(lyr, visible) {
-            var map = this.getMap();
+        value: function setVisible_(map, lyr, visible) {
             lyr.setVisible(visible);
             if (visible && lyr.get('type') === 'base') {
                 // Hide all other base layers regardless of grouping
@@ -271,17 +285,16 @@ var LayerSwitcher = function (_Control) {
         }
 
         /**
-        * Render all layers that are children of a group.
+        * **Static** Render all layers that are children of a group.
         * @private
+        * @param {ol.Map} map The map instance.
         * @param {ol.layer.Base} lyr Layer to be rendered (should have a title property).
         * @param {Number} idx Position in parent group list.
         */
 
     }, {
         key: 'renderLayer_',
-        value: function renderLayer_(lyr, idx) {
-
-            var this_ = this;
+        value: function renderLayer_(map, lyr, idx) {
 
             var li = document.createElement('li');
 
@@ -298,7 +311,7 @@ var LayerSwitcher = function (_Control) {
                 var ul = document.createElement('ul');
                 li.appendChild(ul);
 
-                this.renderLayers_(lyr, ul);
+                LayerSwitcher.renderLayers_(map, lyr, ul);
             } else {
 
                 li.className = 'layer';
@@ -312,14 +325,14 @@ var LayerSwitcher = function (_Control) {
                 input.id = lyrId;
                 input.checked = lyr.get('visible');
                 input.onchange = function (e) {
-                    this_.setVisible_(lyr, e.target.checked);
+                    LayerSwitcher.setVisible_(map, lyr, e.target.checked);
                 };
                 li.appendChild(input);
 
                 label.htmlFor = lyrId;
                 label.innerHTML = lyrTitle;
 
-                var rsl = this.getMap().getView().getResolution();
+                var rsl = map.getView().getResolution();
                 if (rsl > lyr.getMaxResolution() || rsl < lyr.getMinResolution()) {
                     label.className += ' disabled';
                 }
@@ -331,20 +344,21 @@ var LayerSwitcher = function (_Control) {
         }
 
         /**
-        * Render all layers that are children of a group.
+        * **Static** Render all layers that are children of a group.
         * @private
+        * @param {ol.Map} map The map instance.
         * @param {ol.layer.Group} lyr Group layer whos children will be rendered.
         * @param {Element} elm DOM element that children will be appended to.
         */
 
     }, {
         key: 'renderLayers_',
-        value: function renderLayers_(lyr, elm) {
+        value: function renderLayers_(map, lyr, elm) {
             var lyrs = lyr.getLayers().getArray().slice().reverse();
             for (var i = 0, l; i < lyrs.length; i++) {
                 l = lyrs[i];
                 if (l.get('title')) {
-                    elm.appendChild(this.renderLayer_(l, i));
+                    elm.appendChild(LayerSwitcher.renderLayer_(map, l, i));
                 }
             }
         }
@@ -357,7 +371,7 @@ var LayerSwitcher = function (_Control) {
         * found under `lyr`. The signature for `fn` is the same as `ol.Collection#forEach`
         */
 
-    }], [{
+    }, {
         key: 'forEachRecursive',
         value: function forEachRecursive(lyr, fn) {
             lyr.getLayers().forEach(function (lyr, idx, a) {
