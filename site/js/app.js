@@ -204,6 +204,50 @@ var styles = {
                 return new ol.geom.MultiPoint(coordinates);
             }
         })
+    ],
+    Polygon: [
+        new ol.style.Style({
+            stroke: new ol.style.Stroke({
+                color: 'rgba(255,255,255,1)',
+                width: 6
+            }),
+        }),
+        new ol.style.Style({
+            stroke: new ol.style.Stroke({
+                color: 'rgba(200,0,0,1)',
+                width: 3
+            }),
+            fill: new ol.style.Fill({
+                color: 'rgba(200,0,0,0.2)'
+            }),
+        }),
+        new ol.style.Style({
+            image:
+                new ol.style.Circle({
+                    fill: new ol.style.Fill({
+                    color: 'rgba(255,255,255,1)'
+                }),
+                radius: 5
+            }),
+            geometry: function(feature) {
+                var coordinates = feature.getGeometry().getCoordinates()[0];
+                return new ol.geom.MultiPoint(coordinates);
+            }
+        }),
+        new ol.style.Style({
+            image:
+                new ol.style.Circle({
+                    fill: new ol.style.Fill({
+                    color: 'rgba(200,0,0,1)'
+                }),
+                radius: 4
+            }),
+            geometry: function(feature) {
+                console.log(feature);
+                var coordinates = feature.getGeometry().getCoordinates()[0];
+                return new ol.geom.MultiPoint(coordinates);
+            }
+        })
     ]
 };
 
@@ -374,7 +418,9 @@ function switch_to_layer(id) {
                 format: new ol.format.GeoJSON(),
                 wrapX: false
             }),
-        //    style: styles.LineString
+            style: function(feature) {
+                return styles[feature.getGeometry().getType()];
+            }
         });
         map.addLayer(vt_layer);
     }
