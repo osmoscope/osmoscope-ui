@@ -143,111 +143,38 @@ var base_layers = function() {
     return [toner_layer, osm_layer];
 }();
 
+var style_circle_casing = new ol.style.Circle({fill: new ol.style.Fill({color: 'rgba(255,255,255,1)'}), radius: 5});
+var style_circle_core = new ol.style.Circle({fill: new ol.style.Fill({color: 'rgba(200,0,0,1)'}), radius: 4});
+var style_stroke_casing = new ol.style.Stroke({color: 'rgba(255,255,255,1)', width: 6});
+var style_stroke_core = new ol.style.Stroke({color: 'rgba(200,0,0,1)', width: 3});
+var style_fill = new ol.style.Fill({color: 'rgba(200,0,0,0.2)'});
+
+function get_linestring_points(feature) {
+    var coordinates = feature.getGeometry().getCoordinates();
+    return new ol.geom.MultiPoint(coordinates);
+}
+
+function get_polygon_points(feature) {
+    var coordinates = feature.getGeometry().getCoordinates()[0];
+    return new ol.geom.MultiPoint(coordinates);
+}
 
 var styles = {
     Point: [
-        new ol.style.Style({
-            image:
-                new ol.style.Circle({
-                    fill: new ol.style.Fill({
-                    color: 'rgba(255,255,255,1)'
-                }),
-                radius: 5
-            })
-        }),
-        new ol.style.Style({
-            image:
-                new ol.style.Circle({
-                    fill: new ol.style.Fill({
-                    color: 'rgba(200,0,0,1)'
-                }),
-                radius: 4
-            })
-        }),
+        new ol.style.Style({image: style_circle_casing}),
+        new ol.style.Style({image: style_circle_core}),
     ],
     LineString: [
-        new ol.style.Style({
-            stroke: new ol.style.Stroke({
-                color: 'rgba(255,255,255,1)',
-                width: 6
-            }),
-        }),
-        new ol.style.Style({
-            stroke: new ol.style.Stroke({
-                color: 'rgba(200,0,0,1)',
-                width: 3
-            }),
-        }),
-        new ol.style.Style({
-            image:
-                new ol.style.Circle({
-                    fill: new ol.style.Fill({
-                    color: 'rgba(255,255,255,1)'
-                }),
-                radius: 5
-            }),
-            geometry: function(feature) {
-                var coordinates = feature.getGeometry().getCoordinates();
-                return new ol.geom.MultiPoint(coordinates);
-            }
-        }),
-        new ol.style.Style({
-            image:
-                new ol.style.Circle({
-                    fill: new ol.style.Fill({
-                    color: 'rgba(200,0,0,1)'
-                }),
-                radius: 4
-            }),
-            geometry: function(feature) {
-                var coordinates = feature.getGeometry().getCoordinates();
-                return new ol.geom.MultiPoint(coordinates);
-            }
-        })
+        new ol.style.Style({stroke: style_stroke_casing}),
+        new ol.style.Style({stroke: style_stroke_core}),
+        new ol.style.Style({image: style_circle_casing, geometry: get_linestring_points}),
+        new ol.style.Style({image: style_circle_core, geometry: get_linestring_points})
     ],
     Polygon: [
-        new ol.style.Style({
-            stroke: new ol.style.Stroke({
-                color: 'rgba(255,255,255,1)',
-                width: 6
-            }),
-        }),
-        new ol.style.Style({
-            stroke: new ol.style.Stroke({
-                color: 'rgba(200,0,0,1)',
-                width: 3
-            }),
-            fill: new ol.style.Fill({
-                color: 'rgba(200,0,0,0.2)'
-            }),
-        }),
-        new ol.style.Style({
-            image:
-                new ol.style.Circle({
-                    fill: new ol.style.Fill({
-                    color: 'rgba(255,255,255,1)'
-                }),
-                radius: 5
-            }),
-            geometry: function(feature) {
-                var coordinates = feature.getGeometry().getCoordinates()[0];
-                return new ol.geom.MultiPoint(coordinates);
-            }
-        }),
-        new ol.style.Style({
-            image:
-                new ol.style.Circle({
-                    fill: new ol.style.Fill({
-                    color: 'rgba(200,0,0,1)'
-                }),
-                radius: 4
-            }),
-            geometry: function(feature) {
-                console.log(feature);
-                var coordinates = feature.getGeometry().getCoordinates()[0];
-                return new ol.geom.MultiPoint(coordinates);
-            }
-        })
+        new ol.style.Style({stroke: style_stroke_casing}),
+        new ol.style.Style({stroke: style_stroke_core, fill: style_fill}),
+        new ol.style.Style({image: style_circle_casing, geometry: get_polygon_points}),
+        new ol.style.Style({image: style_circle_core, geometry: get_polygon_points})
     ]
 };
 
