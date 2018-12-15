@@ -97,8 +97,8 @@ function update_state() {
     if (state.zoom != default_state.zoom || state.center[0] != default_state.center[0] || state.center[1] != default_state.center[1]) {
         hash += '&map=' +
         state.zoom + '/' +
-        Math.round(state.center[0] * 100) / 100 + '/' +
-        Math.round(state.center[1] * 100) / 100;
+        Math.round(state.center[0] * 100000) / 100000 + '/' +
+        Math.round(state.center[1] * 100000) / 100000;
     }
 
     if (state.base_layer != default_state.base_layer) {
