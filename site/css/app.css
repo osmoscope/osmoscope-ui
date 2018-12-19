@@ -42,7 +42,7 @@ html, body {
     left: 0;
     height: 50px;
     width: 240px;
-    padding: 10px 10px 10px 6px;
+    padding: 16px 10px 10px 6px;
     font-size: 150%;
     font-weight: bold;
     color: #404040;
@@ -52,6 +52,8 @@ html, body {
     width: 56px;
     height: 56px;
     float: left;
+    margin-top: -6px;
+    padding-left: 6px;
     padding-right: 10px;
 }
 
