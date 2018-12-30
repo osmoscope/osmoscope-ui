@@ -32,7 +32,7 @@ changes. It has the following structure:
 }
 ```
 
-Of course the URLs shown here are just examples. Any URL will do.
+Of course the URLs shown here are just examples. Any URL will do. Even relative URLs.
 
 If you have the data as vector tiles, you'll need a `vector_tile_url` instead
 of a `geojson_url`. The vector tile URL is a template where `{x}` and `{y}` are

@@ -203,6 +203,14 @@ function escape_html(string) {
     });
 }
 
+function absolute_url(url, baseUrl) {
+    if (url && !url.startsWith('http://') && !url.startsWith('https://')) {
+        return new URL(url, baseUrl).toString();
+    } else {
+        return url;
+    }
+}
+
 function DataLayer(url, data) {
     this.url      = url;
     this.id       = escape_html(data.id);
@@ -225,15 +233,15 @@ function DataLayer(url, data) {
     };
 
     this.vector_tile_url = function() {
-        return data.vector_tile_url;
+        return absolute_url(data.vector_tile_url, this.url);
     };
 
     this.geojson_url = function() {
-        return data.geojson_url;
+        return absolute_url(data.geojson_url, this.url);
     };
 
     this.stats_data_url = function() {
-        return data.stats_data_url;
+        return absolute_url(data.stats_data_url, this.url);
     };
 
     this.style = function() {
@@ -448,8 +456,8 @@ function load_data_source(url) {
         if (data.layers) {
             add_to_data_source_list(url, data.name);
             data_sources.push(data);
-            data.layers.forEach(function(url) {
-                load_data_layer(url);
+            data.layers.forEach(function(layerUrl) {
+                load_data_layer(absolute_url(layerUrl,url));
             });
         } else {
             add_to_data_source_list(url, data.name);
