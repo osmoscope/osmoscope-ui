@@ -373,7 +373,14 @@ function switch_to_layer(id) {
     }
 
     if (layer.stats_data_url()) {
-        d3.json(layer.stats_data_url()).then(init_stats);
+        if (layer.stats_data_url().endsWith('.csv')) {
+            d3.csv(layer.stats_data_url(),function (d) {
+                    return [d.Date, +d.Count];
+                })
+            .then(init_stats);
+        } else {
+            d3.json(layer.stats_data_url()).then(init_stats);
+        }
     } else {
         document.getElementById('canvas_stats').textContent = 'No statistics available for this layer';
     }
