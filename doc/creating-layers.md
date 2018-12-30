@@ -81,6 +81,27 @@ For layers with up to a few hundred features, creating a GeoJSON layer is
 easy to do and performant enough. For larger layers, you'll probably need
 a vector tile layer for performance.
 
+## The Stats Data File
+The stats data file provides historic information like the number of the layer's features at a given date. It can be supplied as a json or a CSV file (in the latter case, the URL must end with `.csv`.).
+
+The json format is a simple array of arrays:
+```
+[
+  [
+    "2017-03-17",
+    311007
+  ],
+  ...
+]
+```
+
+The CSV file requires two comma separated columns 'Date' and 'Count', the date is expected in yyyy-MM-dd format:
+```
+Date,Count
+2017-03-17,311007
+...
+```
+
 
 ## CORS-Headers
 
