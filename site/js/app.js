@@ -247,6 +247,8 @@ function DataLayer(url, data) {
     this.fill_meta_tab = function() {
         document.getElementById('layer-meta-name').textContent = this.name();
         document.getElementById('layer-meta-desc').textContent = this.description();
+        document.getElementById('layer-meta-why-problem').textContent = this.why_problem();
+        document.getElementById('layer-meta-how-to-fix').textContent = this.how_to_fix();
         document.getElementById('layer-meta-updates').innerHTML = this.updates();
         document.getElementById('layer-meta-url').textContent = this.url;
         document.getElementById('layer-meta-url').setAttribute('href', this.url);
