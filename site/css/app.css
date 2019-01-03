@@ -173,7 +173,7 @@ button::-moz-focus-inner {
     min-height: 20px;
     z-index: 10;
     display: none;
-    background-image: url('/css/images/icons-svg/alert-black.svg');
+    background-image: url('images/icons-svg/alert-black.svg');
     background-repeat: no-repeat;
     background-position: left 6px bottom 5px;
 }
