@@ -123,6 +123,7 @@ depending on the kind of data you have. Here is an example to get you going:
 ```
 tippecanoe --output-to-directory new_layer \
            --no-tile-compression \
+           --generate-ids \
            --layer=new_layer \
            --name="New Layer" \
            --description="Description of new layer" \
@@ -152,4 +153,7 @@ they can be served from any web server without any special configuration. For
 production use, you want to do the compression but you need to configure your
 web server then so it knows the files are compressed and serves them as is
 telling the client that they are compressed.
+
+The `--generate-ids` tells Tippecanoe to generate unique IDs for all features.
+This might not be necessary if your input already has unique IDs.
 
