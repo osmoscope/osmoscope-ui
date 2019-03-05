@@ -3,13 +3,13 @@ var map, vt_layer, data_sources = [], data_layers = {};
 var unique_id_counter = 1, highlight = null;
 var load_counter = 0;
 
-var data_layer_num = 0;
-
 var josm_control, id_control;
 
 var shouldUpdate = true;
 
 var re_numeric = /^[0-9]+$/;
+
+/****************************************************************************/
 
 var default_state = {
     'tab': 'm',
@@ -120,6 +120,8 @@ function update_state() {
     window.history.pushState(state, '', hash.replace('&', '#'));
 }
 
+/****************************************************************************/
+
 var base_layers = function() {
     var osm_layer = new ol.layer.Tile({
         source: new ol.source.OSM({
@@ -150,6 +152,8 @@ var base_layers = function() {
 
     return [toner_layer, osm_layer];
 }();
+
+/****************************************************************************/
 
 var style_circle_casing = new ol.style.Circle({fill: new ol.style.Fill({color: 'rgba(255,255,255,1)'}), radius: 5});
 var style_circle_core = new ol.style.Circle({fill: new ol.style.Fill({color: 'rgba(200,0,0,1)'}), radius: 4});
@@ -186,6 +190,8 @@ var styles = {
     ]
 };
 
+/****************************************************************************/
+
 var entity_map = {
     '&': '&amp;',
     '<': '&lt;',
@@ -210,6 +216,8 @@ function absolute_url(url, baseUrl) {
         return url;
     }
 }
+
+/****************************************************************************/
 
 function DataLayer(url, data) {
     this.url      = url;
@@ -330,6 +338,16 @@ function popup_content(feature) {
     return out;
 }
 
+function switch_to_no_layer() {
+    state.layer = null;
+    document.getElementById('canvas_stats').textContent = '';
+
+    document.querySelector('#title h1').textContent = "";
+    if (vt_layer !== undefined) {
+        map.removeLayer(vt_layer);
+    }
+}
+
 function switch_to_layer(id) {
     var layer = data_layers[id];
 
@@ -396,24 +414,27 @@ function switch_to_layer(id) {
     }
 }
 
-function add_data_layer(url, data) {
-    console.log('Add data layer ' + data_layer_num + ': ' + url, data);
+function build_layers_list() {
+    var ul = document.createElement('ul');
 
-    data_layers[url] = new DataLayer(url, data);
+    Object.keys(data_layers).forEach(function(url, n) {
+        var li = document.createElement('li');
+        li.innerHTML = '<button id="layer_'+ n
+                       + '" href="' + url
+                       + '" class="'+ (state.layer == url ? "selected" : "") +'">'
+                       + escape_html(data_layers[url].name())
+                       + '</button>';
 
-    var li = document.createElement('li');
-    li.innerHTML = '<button id="layer_'+ data_layer_num + '" href="' + url + '">' + escape_html(data.name) + '</button>';
+        li.children[0].addEventListener('click', function(event) {
+            event.preventDefault();
+            switch_to_layer(url);
+        });
 
-    var layerlist = document.getElementById('layerlist');
-    layerlist.appendChild(li);
-
-    li.children[0].addEventListener('click', function(event) {
-        event.preventDefault();
-        switch_to_layer(url);
+        ul.appendChild(li);
     });
 
     var hover_desc = document.getElementById('hover-desc');
-    layerlist.querySelectorAll('button').forEach(function(element) {
+    ul.querySelectorAll('button').forEach(function(element) {
         var layer = data_layers[element.getAttribute('href')];
         var timeout;
 
@@ -432,7 +453,16 @@ function add_data_layer(url, data) {
 
     });
 
-    ++data_layer_num;
+    var layerlist = document.getElementById('layerlist-wrapper');
+    layerlist.replaceChild(ul, document.getElementById('layerlist'));
+    ul.setAttribute('id', 'layerlist');
+}
+
+function add_data_layer(url, data) {
+    console.log('Add data layer: ' + url, data);
+
+    data_layers[url] = new DataLayer(url, data);
+    build_layers_list();
 }
 
 function load_data_layer(url) {
@@ -464,6 +494,9 @@ function load_data_source(url) {
         document.getElementById('add_source').value = '';
         if (data.layers) {
             add_to_data_source_list(url, data.name);
+            if (data.url === undefined) {
+                data.url = url;
+            }
             data_sources.push(data);
             data.layers.forEach(function(layerUrl) {
                 load_data_layer(absolute_url(layerUrl,url));
@@ -477,6 +510,7 @@ function load_data_source(url) {
             });
             add_data_layer(url, data);
         }
+        window.localStorage.setItem("sources", JSON.stringify(data_sources));
     });
 }
 
@@ -623,6 +657,7 @@ function open_layers_config() {
 function close_layers_config() {
     document.getElementById('overlay-layers').style.display = 'none';
     remove_class(document.getElementById('everything'), 'overlay-shader');
+    build_layers_list();
 }
 
 function load_state_layer_later() {
@@ -723,7 +758,17 @@ document.addEventListener('DOMContentLoaded', function() {
         child.addEventListener('click', switch_tab, false);
     });
 
-    load_data_source('http://area.jochentopf.com/osmm/layers.json');
+    window.addEventListener("load", function(event) {
+        if (window.localStorage.getItem("sources") === null) {
+            load_data_source('http://area.jochentopf.com/osmm/layers.json');
+        } else {
+            var sources = JSON.parse(window.localStorage.getItem("sources"));
+            sources.forEach(function(source) {
+                console.log("Source from localStorage: ", source);
+                load_data_source(source.url);
+            });
+        }
+    });
 
     document.getElementById('add_source').addEventListener('change', function(event) {
         load_data_source(this.value);
@@ -731,6 +776,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.getElementById('overlay-layers-open').addEventListener('click', open_layers_config);
     document.getElementById('overlay-layers-close').addEventListener('click', close_layers_config);
+    document.getElementById('remove-all-sources').addEventListener('click', function() {
+        window.localStorage.clear();
+        data_sources = [];
+        data_layers ={};
+        var fs = document.getElementById('sources-list').querySelectorAll('fieldset')[0];
+        console.log(fs);
+        fs.querySelectorAll('div').forEach(function(el) {
+            console.log(el);
+            fs.removeChild(el);
+        });
+        switch_to_no_layer();
+        build_layers_list();
+    });
 
     document.addEventListener('keyup', function(e) {
         if (e.keyCode === 27) { // esc

@@ -22,6 +22,7 @@
         <div id="source-input">
             <label for="add_source">Add data source URL:</label>
             <input type="url" name="name" id="add_source" value="" size="60">
+            <button id="remove-all-sources">Remove all sources</button>
         </div>
         <div id="sources-list">
             <fieldset>
@@ -48,8 +49,10 @@
         <form>
             <input type="text" id="layer-filter" autocomplete="off">
         </form>
-        <ul id="layerlist">
-        </ul>
+        <div id="layerlist-wrapper">
+            <ul id="layerlist">
+            </ul>
+        </div>
     </div>
     <div id="box-main">
         <div id="messages">
