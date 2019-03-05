@@ -449,3 +449,14 @@ table.desc td {
     background-size: 5%;
 }
 
+.remove-pin-container {
+  top: 22em;
+  left: 0.5em;
+}
+
+.remove-pin-control {
+  background-image: url('../img/remove_pin_icon.svg');
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: 15px;
+}
