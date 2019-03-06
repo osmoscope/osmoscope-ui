@@ -634,11 +634,11 @@ function load_state_layer_later() {
 }
 
 function remove_search_pin() {
-  var remove_layer_name = 'geocoder-layer';
+  var search_layer_name = 'geocoder-layer';
   var layers_to_remove = [];
   map.getLayers().forEach(function(layer) {
     var layer_name = layer.getProperties().name;
-    if (layer_name && layer_name.match(remove_layer_name)) {
+    if (layer_name && layer_name.match(search_layer_name)) {
       layers_to_remove.push(layer);
     }
   });
@@ -646,6 +646,9 @@ function remove_search_pin() {
   for (var i = 0; i < layers_to_remove.length; i++) {
     map.removeLayer(layers_to_remove[i]);
   }
+
+  var pin_remove_button = document.getElementById('remove-pin-container');
+  pin_remove_button.style.display = 'none';
 }
 
 var pin_remove_button = function(opt_options) {
@@ -656,7 +659,8 @@ var pin_remove_button = function(opt_options) {
   button.className = 'remove-pin-control';
 
   var element = document.createElement('div');
-  element.className = 'remove-pin-container ol-control ol-unselectable';
+  element.id = 'remove-pin-container'
+  element.className = 'ol-control ol-unselectable';
   element.appendChild(button);
 
   button.addEventListener('click', remove_search_pin, false);
@@ -669,6 +673,18 @@ var pin_remove_button = function(opt_options) {
 };
 
 ol.inherits(pin_remove_button, ol.control.Control);
+
+var available_pin_remove = function() {
+  var search_layer_name = 'geocoder-layer';
+
+  map.getLayers().forEach(function(layer) {
+    var layer_name = layer.getProperties().name;
+    if (layer_name && layer_name.match(search_layer_name)) {
+      var pin_remove_button = document.getElementById('remove-pin-container');
+      pin_remove_button.style.display = 'inherit';
+    }
+  })
+}
 
 document.addEventListener('DOMContentLoaded', function() {
 
@@ -807,5 +823,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     remove_pin_control = new pin_remove_button
     map.addControl(remove_pin_control)
+
+    map.getLayers().addEventListener('propertychange', available_pin_remove)
 });
 

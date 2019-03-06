@@ -449,9 +449,10 @@ table.desc td {
     background-size: 5%;
 }
 
-.remove-pin-container {
+#remove-pin-container {
   top: 22em;
   left: 0.5em;
+  display: none;
 }
 
 .remove-pin-control {
