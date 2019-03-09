@@ -668,6 +668,59 @@ function load_state_layer_later() {
     }
 }
 
+function remove_search_pin() {
+  var search_layer_name = 'geocoder-layer';
+  var layers_to_remove = [];
+  map.getLayers().forEach(function(layer) {
+    var layer_name = layer.getProperties().name;
+    if (layer_name && layer_name.match(search_layer_name)) {
+      layers_to_remove.push(layer);
+    }
+  });
+
+  for (var i = 0; i < layers_to_remove.length; i++) {
+    map.removeLayer(layers_to_remove[i]);
+  }
+
+  var pin_remove_button = document.getElementById('remove-pin-container');
+  pin_remove_button.style.display = 'none';
+}
+
+var pin_remove_button = function(opt_options) {
+  var options = opt_options || {};
+
+  var button = document.createElement('button');
+  button.innerHTML = '';
+  button.className = 'remove-pin-control';
+
+  var element = document.createElement('div');
+  element.id = 'remove-pin-container'
+  element.className = 'ol-control ol-unselectable';
+  element.appendChild(button);
+
+  button.addEventListener('click', remove_search_pin, false);
+  button.addEventListener('touchstart', remove_search_pin, false);
+
+  ol.control.Control.call(this, {
+    element: element,
+    target: options.target
+  });
+};
+
+ol.inherits(pin_remove_button, ol.control.Control);
+
+var available_pin_remove = function() {
+  var search_layer_name = 'geocoder-layer';
+
+  map.getLayers().forEach(function(layer) {
+    var layer_name = layer.getProperties().name;
+    if (layer_name && layer_name.match(search_layer_name)) {
+      var pin_remove_button = document.getElementById('remove-pin-container');
+      pin_remove_button.style.display = 'inherit';
+    }
+  })
+}
+
 document.addEventListener('DOMContentLoaded', function() {
 
     parse_url();
@@ -825,5 +878,10 @@ document.addEventListener('DOMContentLoaded', function() {
             window.setTimeout(load_state_layer_later, 50);
         }
     }
+
+    remove_pin_control = new pin_remove_button
+    map.addControl(remove_pin_control)
+
+    map.getLayers().addEventListener('propertychange', available_pin_remove)
 });
 
