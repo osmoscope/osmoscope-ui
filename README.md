@@ -39,7 +39,7 @@ cd site
 ruby -run -ehttpd . -p8000 --bind-address=127.0.0.1
 ```
 
-A test server is available at http://osmoscope.jochentopf.com/ .
+A test server is available at http://osmoscope.openstreetmap.de/ .
 
 
 ## To add your own layers
