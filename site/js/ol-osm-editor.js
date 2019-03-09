@@ -66,10 +66,12 @@ var EditInOSMControl = function(opt_options) {
     if (options.editor === undefined) {
     } else if (options.editor === 'josm') {
         options.openEditor = open_in_josm_with_view;
+        options.title = 'Open current view in JOSM';
         options.icon = 'J';
         options.className = 'edit-in-osm-control-josm';
     } else if (options.editor === 'id') {
         options.openEditor = open_in_id_with_view;
+        options.title = 'Open current view in iD';
         options.icon = 'iD';
         options.className = 'edit-in-osm-control-id';
     } else {
@@ -78,6 +80,7 @@ var EditInOSMControl = function(opt_options) {
     }
 
     var button = document.createElement('button');
+    button.setAttribute('title', options.title);
     button.innerHTML = options.icon;
 
     var this_ = this;

@@ -691,6 +691,7 @@ var pin_remove_button = function(opt_options) {
 
   var button = document.createElement('button');
   button.innerHTML = '';
+  button.setAttribute('title', 'Remove search pin');
   button.className = 'remove-pin-control';
 
   var element = document.createElement('div');
@@ -762,6 +763,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var zoomslider = new ol.control.ZoomSlider();
     map.addControl(zoomslider);
 
+    document.querySelector('#map .ol-zoomslider-thumb').setAttribute('title', 'Zoom');
     map.getView().on('change:resolution', updateZoomSliderText);
     updateZoomSliderText();
 
@@ -799,6 +801,7 @@ document.addEventListener('DOMContentLoaded', function() {
         placeholder: 'Search for a place',
     });
     map.addControl(geocoder);
+    document.querySelector('#map .ol-geocoder button').setAttribute('title', 'Search for a place');
 
     josm_control = new EditInOSMControl({ editor: 'josm' });
     id_control = new EditInOSMControl({ editor: 'id' });
