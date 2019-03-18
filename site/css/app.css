@@ -171,7 +171,7 @@ button::-moz-focus-inner {
     color: #d04040;
     border-radius: 5px;
     min-height: 20px;
-    z-index: 10;
+    z-index: 2000;
     display: none;
     background-image: url('images/icons-svg/alert-black.svg');
     background-repeat: no-repeat;

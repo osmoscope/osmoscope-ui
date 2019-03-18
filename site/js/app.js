@@ -474,6 +474,8 @@ function load_data_layer(url) {
         if (url == state.layer) {
             switch_to_layer(url);
         }
+    }).catch(function(error){
+        show_message("Error loading data layer " + url + "\n" + error);
     });
 }
 
@@ -511,6 +513,8 @@ function load_data_source(url) {
             add_data_layer(url, data);
         }
         window.localStorage.setItem("sources", JSON.stringify(data_sources));
+    }).catch(function(error){
+        show_message("Error loading data source " + url + "\n" + error);
     });
 }
 
