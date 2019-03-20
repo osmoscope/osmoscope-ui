@@ -103,7 +103,9 @@ Date,Count
 ```
 
 
-## CORS-Headers
+## Setting up the Web Server
+
+### CORS-Headers
 
 All the resources that you publish, ie. the layer and data source JSON files
 as well as the geodata in the GeoJSON file or vector tiles must be available
@@ -111,6 +113,18 @@ for inclusion into third party web sites. For this your web server has to set
 the correct CORS ([Cross-origin resource
 sharing](https://en.wikipedia.org/wiki/Cross-origin_resource_sharing)) headers.
 
+### HTTP vs. HTTPS
+
+Ideally your data is available through a `https` URL. If it is only available
+through a `http` URL a browser showing Osmoscope through a `https` URL will
+not load your layer for security reasons.
+
+### Caching
+
+It is your job to set the right caching headers, so that the browser showing
+Osmoscope will reload your layer when it was updated. So in a typical setup
+you can have a long caching time for the static layer file, but only cache the
+GeoJSON and vector tiles for a day or so.
 
 ## Creating Vector Tile Layers with Tippecanoe
 
