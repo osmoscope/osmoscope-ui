@@ -174,7 +174,7 @@ function get_polygon_points(feature) {
 var styles = {
     Point: [
         new ol.style.Style({image: style_circle_casing}),
-        new ol.style.Style({image: style_circle_core}),
+        new ol.style.Style({image: style_circle_core})
     ],
     LineString: [
         new ol.style.Style({stroke: style_stroke_casing}),
@@ -189,6 +189,9 @@ var styles = {
         new ol.style.Style({image: style_circle_core, geometry: get_polygon_points})
     ]
 };
+styles["MultiPoint"] = styles["Point"];
+styles["MultiLineString"] = styles["LineString"];
+styles["MultiPolygon"] = styles["Polygon"];
 
 /****************************************************************************/
 
