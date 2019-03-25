@@ -833,8 +833,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    document.getElementById('add_source').addEventListener('change', function(event) {
-        load_data_source(this.value);
+    document.getElementById('button-add-source').addEventListener('click', function(event) {
+	load_data_source(document.getElementById('add_source').value);
+    });
+
+    document.getElementById('add_source').addEventListener('keyup', function(event) {
+        if (event.keyCode == 13) {
+            load_data_source(this.value);
+        }
     });
 
     document.getElementById('overlay-layers-open').addEventListener('click', open_layers_config);
