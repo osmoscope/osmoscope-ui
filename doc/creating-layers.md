@@ -72,7 +72,10 @@ not work.
 
 If the features in your layer have attributes called `node_id`, `way_id`, or
 `relation_id`, those attributes will be recognized as OSM IDs and the UI will
-create appropriate links for them.
+create appropriate links for them. Alternatively, attributes called `@id` with 
+a value of `type/&lt;id&gt;` or `t&lt;id&gt;` (where `type` is one of `node`, 
+`way` or `relation` or `t` respectively is one of `n`, `w` or `r`) will be 
+recognized as OSM IDs.
 
 You should have an attribute `timestamp` on all features containing the date
 and time in ISO format when this feature last changed.
