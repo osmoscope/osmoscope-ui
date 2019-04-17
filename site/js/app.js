@@ -296,9 +296,24 @@ function get_selection_object(feature) {
 
     if (props.node_id !== undefined) {
         return ['node', props.node_id];
-    }
-    if (props.way_id !== undefined) {
+    } else if (props.way_id !== undefined) {
         return ['way', props.way_id];
+    } else if (props.relation_id !== undefined) {
+        return ['relation', props.rel_id];
+    } else if (props['@id'] !== undefined) {
+        var id = props['@id'];
+        if (id.includes('/')) {
+            var split_id = id.split('/');
+            if (len(split_id) == 2 && split_id[0] in ('node', 'way', 'relation') && split_id[1].match(re_numeric))
+            return split_id;
+        } else if (id.match(/[n|w|r]\d+/)) {
+            var element_id = id.substring(1);
+            switch (id[0]){
+                case 'n': return ['node', element_id];
+                case 'w': return ['way', element_id];
+                case 'r': return ['relation', element_id];
+            }
+        }
     }
 
     return undefined
@@ -325,6 +340,10 @@ function popup_content(feature) {
             } else if (p == 'relation_id' && value.match(re_numeric)) {
                 p = 'Relation ID';
                 value = '<a target="_blank" href="https://www.openstreetmap.org/relation/' + value + '">' + value + '</a>';
+            } else if (p == '@id' && get_selection_object(feature) !== undefined) {
+                var id = get_selection_object(feature);
+                p = id[0].charAt(0).toUpperCase() + id[0].slice(1) + ' ID';
+                value = '<a target="_blank" href="https://www.openstreetmap.org/' + id[0] + '/' + id[1] + '">' + id[1] + '</a>';
             } else if (p == 'timestamp') {
                 p = 'Timestamp';
                 value = value.replace(/^([0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9])T([0-9][0-9]:[0-9][0-9]:[0-9][0-9])Z$/, "$1 $2");
