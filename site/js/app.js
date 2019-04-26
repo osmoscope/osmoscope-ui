@@ -171,6 +171,17 @@ function get_polygon_points(feature) {
     return new ol.geom.MultiPoint(coordinates);
 }
 
+function get_geometrycollection_points(feature) {
+    var coordinates = [];
+    var geoms = feature.getGeometry().getGeometriesArray()
+    var geomsLength = geoms.length;
+    for (var i = 0; i < geomsLength; i++) {
+        var geom_coords = geoms[i].getCoordinates();
+        coordinates.push(geom_coords);
+    }
+    return new ol.geom.MultiPoint(coordinates);
+}
+
 var styles = {
     Point: [
         new ol.style.Style({image: style_circle_casing}),
@@ -187,6 +198,12 @@ var styles = {
         new ol.style.Style({stroke: style_stroke_core, fill: style_fill}),
         new ol.style.Style({image: style_circle_casing, geometry: get_polygon_points}),
         new ol.style.Style({image: style_circle_core, geometry: get_polygon_points})
+    ],
+    GeometryCollection: [
+        new ol.style.Style({stroke: style_stroke_casing}),
+        new ol.style.Style({stroke: style_stroke_core, fill: style_fill}),
+        new ol.style.Style({image: style_circle_casing, geometry: get_geometrycollection_points}),
+        new ol.style.Style({image: style_circle_core, geometry: get_geometrycollection_points})
     ]
 };
 styles["MultiPoint"] = styles["Point"];
