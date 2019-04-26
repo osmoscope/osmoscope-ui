@@ -171,6 +171,17 @@ function get_polygon_points(feature) {
     return new ol.geom.MultiPoint(coordinates);
 }
 
+function get_geometrycollection_points(feature) {
+    var coordinates = [];
+    var geoms = feature.getGeometry().getGeometriesArray()
+    var geomsLength = geoms.length;
+    for (var i = 0; i < geomsLength; i++) {
+        var geom_coords = geoms[i].getFlatCoordinates();
+        coordinates.push(geom_coords);
+    }
+    return new ol.geom.MultiPoint(coordinates);
+}
+
 var styles = {
     Point: [
         new ol.style.Style({image: style_circle_casing}),
@@ -187,7 +198,14 @@ var styles = {
         new ol.style.Style({stroke: style_stroke_core, fill: style_fill}),
         new ol.style.Style({image: style_circle_casing, geometry: get_polygon_points}),
         new ol.style.Style({image: style_circle_core, geometry: get_polygon_points})
+    ],
+    GeometryCollection: [
+        new ol.style.Style({stroke: style_stroke_casing}),
+        new ol.style.Style({stroke: style_stroke_core, fill: style_fill}),
+        new ol.style.Style({image: style_circle_casing, geometry: get_geometrycollection_points}),
+        new ol.style.Style({image: style_circle_core, geometry: get_geometrycollection_points})
     ]
+      
 };
 styles["MultiPoint"] = styles["Point"];
 styles["MultiLineString"] = styles["LineString"];
@@ -304,8 +322,8 @@ function get_selection_object(feature) {
         var id = props['@id'];
         if (id.includes('/')) {
             var split_id = id.split('/');
-            if (len(split_id) == 2 && split_id[0] in ('node', 'way', 'relation') && split_id[1].match(re_numeric))
-            return split_id;
+            if (split_id.length == 2 && ['node', 'way', 'relation'].includes(split_id[0]) && split_id[1].match(re_numeric))
+                return split_id;
         } else if (id.match(/[n|w|r]\d+/)) {
             var element_id = id.substring(1);
             switch (id[0]){
