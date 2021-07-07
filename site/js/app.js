@@ -67,9 +67,9 @@ function set_state() {
     }
     map.getView().setCenter(ol.proj.transform(state.center, 'EPSG:4326', 'EPSG:3857'));
     map.getView().setZoom(state.zoom);
-    document.getElementById('slide').value = state.base_layer_opacity;
+    document.getElementById('slide').value = parseFloat(state.base_layer_opacity);
     base_layers.forEach(function(l) {
-        l.setOpacity(state.base_layer_opacity);
+        l.setOpacity(parseFloat(state.base_layer_opacity));
     });
     base_layers.forEach(function(l) {
         l.setVisible(state.base_layer == l.get('shortname'));
@@ -137,7 +137,7 @@ var base_layers = function() {
 
     var toner_layer = new ol.layer.Tile({
         source: new ol.source.XYZ({
-            url: 'http://tile.stamen.com/toner/{z}/{x}/{y}.png',
+            url: 'https://stamen-tiles.a.ssl.fastly.net/toner/{z}/{x}/{y}.png',
             minZoom: 1,
             maxZoom: 19,
             attributions: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="https://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>.' +
@@ -302,6 +302,7 @@ function show_message(text) {
 }
 
 function update_opacity(value) {
+    value = parseFloat(value)
     state.base_layer_opacity = value;
     base_layers.forEach(function(l) {
         l.setOpacity(value);
@@ -540,6 +541,7 @@ function load_data_source(url) {
                 data.url = url;
             }
             data_sources.push(data);
+            console.log(data.layers)
             data.layers.forEach(function(layerUrl) {
                 load_data_layer(absolute_url(layerUrl,url));
             });
@@ -752,7 +754,12 @@ var pin_remove_button = function(opt_options) {
   });
 };
 
-ol.inherits(pin_remove_button, ol.control.Control);
+var ol_ext_inherits = function(child,parent) {
+    child.prototype = Object.create(parent.prototype);
+    child.prototype.constructor = child;
+};
+
+ol_ext_inherits(pin_remove_button, ol.control.Control);
 
 var available_pin_remove = function() {
   var search_layer_name = 'geocoder-layer';
@@ -860,7 +867,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     window.addEventListener("load", function(event) {
         if (window.localStorage.getItem("sources") === null) {
-            load_data_source('http://area.jochentopf.com/osmm/layers.json');
+            load_data_source('https://gsoc2021-qa.nominatim.org/QA-data/layers.json');
         } else {
             var sources = JSON.parse(window.localStorage.getItem("sources"));
             sources.forEach(function(source) {

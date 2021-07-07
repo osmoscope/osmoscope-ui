@@ -1,3 +1,7 @@
+var ol_ext_inherits = function(child,parent) {
+    child.prototype = Object.create(parent.prototype);
+    child.prototype.constructor = child;
+};
 
 var EditInOSMControl = function(opt_options) {
 
@@ -100,5 +104,5 @@ var EditInOSMControl = function(opt_options) {
     });
 };
 
-ol.inherits(EditInOSMControl, ol.control.Control);
+ol_ext_inherits(EditInOSMControl, ol.control.Control);
 
