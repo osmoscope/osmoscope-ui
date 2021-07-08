@@ -349,15 +349,22 @@ function popup_content(feature) {
             var value = props[p].toString();
             if (p == 'geometry') {
                 continue;
-            } else if (p == 'node_id' && value.match(re_numeric)) {
-                p = 'Node ID';
-                value = '<a target="_blank" href="https://www.openstreetmap.org/node/' + value + '">' + value + '</a>';
-            } else if (p == 'way_id' && value.match(re_numeric)) {
-                p = 'Way ID';
-                value = '<a target="_blank" href="https://www.openstreetmap.org/way/' + value + '">' + value + '</a>';
-            } else if (p == 'relation_id' && value.match(re_numeric)) {
-                p = 'Relation ID';
-                value = '<a target="_blank" href="https://www.openstreetmap.org/relation/' + value + '">' + value + '</a>';
+            } else if ((p == 'node_id' || p == 'way_id' || p == 'relation_id' || p.match('^[nwr]\/@id')) && value.match(re_numeric)) {
+                //Get the data type ('n' or 'w' or 'r')
+                data_type = p.charAt(0)
+                if (p.match('^[nwr]\/@id')) {
+                    p = p.slice(5)
+                } else {
+                    //For example transform 'node_id' into 'Node ID'
+                    splitted = p.split('_')
+                    p = splitted[0].charAt(0).toUpperCase() + splitted[0].slice(1) + ' ' + splitted[1].toUpperCase()
+                }
+                types_mapping = {
+                    n: 'node',
+                    w: 'way',
+                    r: 'relation'
+                }
+                value = '<a target="_blank" href="https://www.openstreetmap.org/' + types_mapping[data_type] + '/' + value + '">' + value + '</a>';
             } else if (p == '@id' && get_selection_object(feature) !== undefined) {
                 var id = get_selection_object(feature);
                 p = id[0].charAt(0).toUpperCase() + id[0].slice(1) + ' ID';
