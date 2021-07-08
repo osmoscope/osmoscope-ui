@@ -67,9 +67,9 @@ function set_state() {
     }
     map.getView().setCenter(ol.proj.transform(state.center, 'EPSG:4326', 'EPSG:3857'));
     map.getView().setZoom(state.zoom);
-    document.getElementById('slide').value = state.base_layer_opacity;
+    document.getElementById('slide').value = parseFloat(state.base_layer_opacity);
     base_layers.forEach(function(l) {
-        l.setOpacity(state.base_layer_opacity);
+        l.setOpacity(parseFloat(state.base_layer_opacity));
     });
     base_layers.forEach(function(l) {
         l.setVisible(state.base_layer == l.get('shortname'));
@@ -302,6 +302,7 @@ function show_message(text) {
 }
 
 function update_opacity(value) {
+    value = parseFloat(value);
     state.base_layer_opacity = value;
     base_layers.forEach(function(l) {
         l.setOpacity(value);
@@ -752,7 +753,12 @@ var pin_remove_button = function(opt_options) {
   });
 };
 
-ol.inherits(pin_remove_button, ol.control.Control);
+var ol_ext_inherits = function(child,parent) {
+    child.prototype = Object.create(parent.prototype);
+    child.prototype.constructor = child;
+};
+
+ol_ext_inherits(pin_remove_button, ol.control.Control);
 
 var available_pin_remove = function() {
   var search_layer_name = 'geocoder-layer';
