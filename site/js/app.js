@@ -137,7 +137,7 @@ var base_layers = function() {
 
     var toner_layer = new ol.layer.Tile({
         source: new ol.source.XYZ({
-            url: 'http://tile.stamen.com/toner/{z}/{x}/{y}.png',
+            url: 'https://stamen-tiles.a.ssl.fastly.net/toner/{z}/{x}/{y}.png',
             minZoom: 1,
             maxZoom: 19,
             attributions: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="https://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>.' +
