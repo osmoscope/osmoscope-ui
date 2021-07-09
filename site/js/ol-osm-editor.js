@@ -100,5 +100,10 @@ var EditInOSMControl = function(opt_options) {
     });
 };
 
-ol.inherits(EditInOSMControl, ol.control.Control);
+var ol_ext_inherits = function(child,parent) {
+    child.prototype = Object.create(parent.prototype);
+    child.prototype.constructor = child;
+};
+
+ol_ext_inherits(EditInOSMControl, ol.control.Control);
 
