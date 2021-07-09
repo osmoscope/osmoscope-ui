@@ -1,14 +1,21 @@
 /*!
- * ol-geocoder - v3.2.0
+ * ol-geocoder - v4.1.2
  * A geocoder extension for OpenLayers.
  * https://github.com/jonataswalker/ol-geocoder
- * Built: Sat Jul 28 2018 15:24:04 GMT-0300 (Brasilia Standard Time)
+ * Built: Wed Jan 20 2021 10:05:07 GMT-0300 (Brasilia Standard Time)
  */
+.ol-touch .ol-control.gcd-gl-control button {
+  font-size: 1.14em; }
+
+.ol-touch .ol-geocoder.gcd-gl-container {
+  font-size: 1.1em; }
+
 .ol-geocoder.gcd-gl-container {
   position: absolute;
   top: 4.875em;
   left: .5em;
-  box-sizing: border-box; }
+  box-sizing: border-box;
+  font-size: 0.9em; }
   .ol-geocoder.gcd-gl-container *,
   .ol-geocoder.gcd-gl-container *::before,
   .ol-geocoder.gcd-gl-container *::after {
@@ -221,7 +228,14 @@
   visibility: hidden; }
 
 .ol-geocoder .gcd-pseudo-rotate::after {
-  animation: spin .7s linear infinite; }
+  -webkit-animation: spin .7s linear infinite;
+          animation: spin .7s linear infinite; }
+
+@-webkit-keyframes spin {
+  from {
+    transform: rotate(0deg); }
+  to {
+    transform: rotate(360deg); } }
 
 @keyframes spin {
   from {
