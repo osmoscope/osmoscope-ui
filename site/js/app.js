@@ -48,7 +48,7 @@ function parse_url() {
         } else if (kv[0] == 'bl') {
             state.base_layer = kv[1];
         } else if (kv[0] == 'op') {
-            state.base_layer_opacity = kv[1];
+            state.base_layer_opacity = parseFloat(kv[1]);
         } else if (kv[0] == 'tab') {
             state.tab = kv[1];
         } else if (kv[0] == 'l') {
@@ -67,9 +67,9 @@ function set_state() {
     }
     map.getView().setCenter(ol.proj.transform(state.center, 'EPSG:4326', 'EPSG:3857'));
     map.getView().setZoom(state.zoom);
-    document.getElementById('slide').value = parseFloat(state.base_layer_opacity);
+    document.getElementById('slide').value = state.base_layer_opacity;
     base_layers.forEach(function(l) {
-        l.setOpacity(parseFloat(state.base_layer_opacity));
+        l.setOpacity(state.base_layer_opacity);
     });
     base_layers.forEach(function(l) {
         l.setVisible(state.base_layer == l.get('shortname'));
