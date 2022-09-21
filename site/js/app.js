@@ -577,7 +577,7 @@ function init_stats(data) {
 /*    var t0 = new Date('2017-01-01');
         t1 = new Date('2017-08-01');*/
 
-    var max = d3.max(data, function(d) {
+    var bounds = d3.extent(data, function(d) {
         return d[1];
     });
 
@@ -586,7 +586,7 @@ function init_stats(data) {
                     .range([0, w]);
 
     var scale_y = d3.scaleLinear()
-                    .domain([0, max])
+                    .domain(bounds)
                     .range([h, 0]);
 
     var chart = d3.select('#canvas_stats').append('svg')
